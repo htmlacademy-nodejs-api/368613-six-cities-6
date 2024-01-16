@@ -30,7 +30,7 @@ export class TSVFileReader implements FileReader {
             throw new Error(`Unknown amenity: ${amenity}`);
           }
           return key;
-        }) : [];        
+        }) : [];
         return {
           title,
           description,
