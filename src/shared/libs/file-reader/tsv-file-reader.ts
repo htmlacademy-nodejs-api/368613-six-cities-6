@@ -45,7 +45,7 @@ export class TSVFileReader implements FileReader {
       ]) => {
         const [latitude, longitude] = coordinates ? coordinates.split(',').map(Number) : [];
         const userType = userTypeString as keyof typeof UserType;
-        const amenitiesKeys = amenities ? amenities.split(',').map(amenity => {
+        const amenitiesKeys = amenities ? amenities.split(',').map((amenity) => {
           const key = amenity.trim() as keyof typeof Amenities;
           if (!Amenities[key]) {
             throw new Error(`Unknown amenity: ${amenity}`);
