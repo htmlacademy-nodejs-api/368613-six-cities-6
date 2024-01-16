@@ -21,7 +21,28 @@ export class TSVFileReader implements FileReader {
       .split('\n')
       .filter((row) => row.trim().length > 0)
       .map((line) => line.split('|'))
-      .map(([title, description, postDate, city, previewImage, photos, isPremium, isFavorite, rating, type, rooms, guests, cost, amenities, name, email, avatarPath, userTypeString, commentsCount, coordinates]) => {
+      .map(([
+        title,
+        description,
+        postDate,
+        city,
+        previewImage,
+        photos,
+        isPremium,
+        isFavorite,
+        rating,
+        type,
+        rooms,
+        guests,
+        cost,
+        amenities,
+        name,
+        email,
+        avatarPath,
+        userTypeString,
+        commentsCount,
+        coordinates
+      ]) => {
         const [latitude, longitude] = coordinates ? coordinates.split(',').map(Number) : [];
         const userType = userTypeString as keyof typeof UserType;
         const amenitiesKeys = amenities ? amenities.split(',').map(amenity => {
@@ -46,7 +67,7 @@ export class TSVFileReader implements FileReader {
           rooms: Number.parseInt(rooms, 10),
           guests: Number.parseInt(guests, 10),
           cost: Number.parseInt(cost, 10),
-          author: {name, email, avatarPath, userType },
+          author: { name, email, avatarPath, userType },
           commentsCount: Number.parseInt(commentsCount, 10),
           coordinates: { latitude, longitude }
         });
