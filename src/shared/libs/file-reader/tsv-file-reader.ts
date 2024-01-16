@@ -31,7 +31,7 @@ export class TSVFileReader implements FileReader {
           }
           return key;
         }) : [];
-        return {
+        return ({
           title,
           description,
           postDate: new Date(postDate),
@@ -49,7 +49,7 @@ export class TSVFileReader implements FileReader {
           author: {name, email, avatarPath, userType },
           commentsCount: Number.parseInt(commentsCount, 10),
           coordinates: { latitude, longitude }
-        };
+        });
       });
   }
 }

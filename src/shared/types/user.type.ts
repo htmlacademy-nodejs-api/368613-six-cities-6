@@ -1,4 +1,4 @@
-import { UserType } from "./const.js";
+import { UserType } from './const.js';
 
 export type User = {
     //id: string; // Уникальный идентификатор пользователя
