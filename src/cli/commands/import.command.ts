@@ -17,12 +17,12 @@ export class ImportCommand implements Command {
       console.log(chalk.bgWhite.black('File imported successfully:'));
       console.log(fileReader.toArray());
     } catch (err) {
-
       if (!(err instanceof Error)) {
         throw err;
       }
 
       console.error(chalk.red(`Can't import data from file: ${filename}`));
-      console.error(chalk.red(`Details: ${err.message}`));    }
+      console.error(chalk.red(`Details: ${err.message}`));
+    }
   }
 }
