@@ -3,6 +3,11 @@ export const UserType = {
   Pro: 'pro'
 } as const;
 
+export const BooleanString = {
+  TRUE: 'true',
+  FALSE: 'false'
+} as const;
+
 export const Cities = {
   Paris: 'Paris',
   Cologne: 'Cologne',

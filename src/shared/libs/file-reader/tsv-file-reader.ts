@@ -1,7 +1,7 @@
 import { FileReader } from './file-reader.interface.js';
 import { readFileSync } from 'node:fs';
 import { Offer } from '../../types/index.js';
-import { Cities, OfferType, Amenities, UserType } from '../../types/index.js';
+import { Cities, OfferType, Amenities, UserType, BooleanString } from '../../types/index.js';
 
 export class TSVFileReader implements FileReader {
   private rawData = '';
@@ -59,8 +59,8 @@ export class TSVFileReader implements FileReader {
           city: Cities[city as keyof typeof Cities],
           previewImage,
           photos: photos ? photos.split(',') : [],
-          isPremium: isPremium === 'true',
-          isFavorite: isFavorite === 'true',
+          isPremium: isPremium === BooleanString.TRUE,
+          isFavorite: isFavorite === BooleanString.TRUE,
           rating: Number.parseFloat(rating),
           type: OfferType[type as keyof typeof OfferType],
           amenities: amenitiesKeys as (keyof typeof Amenities)[],
