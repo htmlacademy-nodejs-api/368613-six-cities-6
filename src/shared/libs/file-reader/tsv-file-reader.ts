@@ -16,11 +16,10 @@ export class TSVFileReader implements FileReader {
     if (!this.rawData) {
       throw new Error('File was not read');
     }
-
     return this.rawData
       .split('\n')
       .filter((row) => row.trim().length > 0)
-      .map((line) => line.split('|'))
+      .map((line) => line.split('\t'))
       .map(([
         title,
         description,
