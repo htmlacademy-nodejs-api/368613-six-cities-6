@@ -1,0 +1,37 @@
+{
+  "api": {
+    "titles": [
+      "Уютная квартира в центре Парижа",
+      "Современная студия в Кельне",
+      "Уютный домик в тихом районе Берлина",
+      "Просторная вилла на побережье Барселоны"
+    ],
+    "descriptions": [
+      "Просторная квартира с двумя спальнями, близко к метро и достопримечательностям.",
+      "Идеально для одиночных путешественников, рядом с центральной площадью.",
+      "Прекрасное место для семейного отдыха, окруженное зеленью и парками.",
+      "Идеальное место для отдыха у моря, с прекрасным видом на океан."
+    ],
+    "photos": [
+      "http://o0.github.io/assets/images/tokyo/hotel1.jpg",
+      "http://o0.github.io/assets/images/tokyo/hotel2.jpg",
+      "http://o0.github.io/assets/images/tokyo/hotel3.jpg"    ],
+    "userNames": [
+      "Мария",
+      "Иван",
+      "Петр",
+      "Анна"
+    ],
+    "userEmails": [
+      "test@pisem.local",
+      "roland@example.com",
+      "oleg@example.com",
+      "ivan@example.com"    ],
+    "avatars": [
+      "img/avatars/user01.png",
+      "img/avatars/user02.png",
+      "img/avatars/user03.png",
+      "img/avatars/user04.png"
+    ]
+  }
+}
