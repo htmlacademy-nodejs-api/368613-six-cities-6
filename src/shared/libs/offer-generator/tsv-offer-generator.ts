@@ -2,19 +2,7 @@ import dayjs from 'dayjs';
 import { Cities, OfferType, Amenities, BooleanString, UserType } from '../../types/const.js';
 import { MockServerData } from '../../types/mock-server-data.type.js';
 import { generateRandomValue, getRandomItem, getRandomItems } from '../../helpers/index.js';
-
-const limitsForMocks = {
-  MIN_COST: 100,
-  MAX_COST: 100000,
-  MIN_RATING: 1,
-  MAX_RATING: 5,
-  MIN_ROOMS: 1,
-  MAX_ROOMS: 8,
-  MIN_GUESTS: 1,
-  MAX_GUESTS: 10,
-  MIN_COMMENTS_COUNT: 0,
-  MAX_COMMENTS_COUNT: 50,
-};
+import { limitsForMocks } from '../../constants/index.js';
 
 export class TSVOfferGenerator {
   constructor(private readonly mockData: MockServerData) {}
