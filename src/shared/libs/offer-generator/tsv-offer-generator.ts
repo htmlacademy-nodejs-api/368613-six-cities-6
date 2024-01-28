@@ -3,16 +3,18 @@ import { Cities, OfferType, Amenities, BooleanString, UserType } from '../../typ
 import { MockServerData } from '../../types/mock-server-data.type.js';
 import { generateRandomValue, getRandomItem, getRandomItems } from '../../helpers/index.js';
 
-const MIN_COST = 100;
-const MAX_COST = 100000;
-const MIN_RATING = 1;
-const MAX_RATING = 5;
-const MIN_ROOMS = 1;
-const MAX_ROOMS = 8;
-const MIN_GUESTS = 1;
-const MAX_GUESTS = 10;
-const MIN_COMMENTS_COUNT = 0;
-const MAX_COMMENTS_COUNT = 50;
+const limitsForMocks = {
+  MIN_COST: 100,
+  MAX_COST: 100000,
+  MIN_RATING: 1,
+  MAX_RATING: 5,
+  MIN_ROOMS: 1,
+  MAX_ROOMS: 8,
+  MIN_GUESTS: 1,
+  MAX_GUESTS: 10,
+  MIN_COMMENTS_COUNT: 0,
+  MAX_COMMENTS_COUNT: 50,
+};
 
 export class TSVOfferGenerator {
   constructor(private readonly mockData: MockServerData) {}
@@ -29,11 +31,11 @@ export class TSVOfferGenerator {
     const postDate = dayjs().subtract(generateRandomValue(1, 30), 'day').format('YYYY-MM-DD');
     const isPremium = Math.random() < 0.5 ? BooleanString.TRUE : BooleanString.FALSE;
     const isFavorite = Math.random() < 0.5 ? BooleanString.TRUE : BooleanString.FALSE;
-    const rating = generateRandomValue(MIN_RATING, MAX_RATING, 1).toString();
-    const rooms = generateRandomValue(MIN_ROOMS, MAX_ROOMS).toString();
-    const guests = generateRandomValue(MIN_GUESTS, MAX_GUESTS).toString();
-    const cost = generateRandomValue(MIN_COST, MAX_COST).toString();
-    const commentsCount = generateRandomValue(MIN_COMMENTS_COUNT, MAX_COMMENTS_COUNT).toString();
+    const rating = generateRandomValue(limitsForMocks.MIN_RATING, limitsForMocks.MAX_RATING, 1).toString();
+    const rooms = generateRandomValue(limitsForMocks.MIN_ROOMS, limitsForMocks.MAX_ROOMS).toString();
+    const guests = generateRandomValue(limitsForMocks.MIN_GUESTS, limitsForMocks.MAX_GUESTS).toString();
+    const cost = generateRandomValue(limitsForMocks.MIN_COST, limitsForMocks.MAX_COST).toString();
+    const commentsCount = generateRandomValue(limitsForMocks.MIN_COMMENTS_COUNT, limitsForMocks.MAX_COMMENTS_COUNT).toString();
 
     // Генерация данных автора
     const userName = getRandomItem(this.mockData.userNames);
