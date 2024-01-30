@@ -1,0 +1,13 @@
+export const limitsForMocks = {
+  MIN_COST: 100,
+  MAX_COST: 100000,
+  MIN_RATING: 1,
+  MAX_RATING: 5,
+  MIN_ROOMS: 1,
+  MAX_ROOMS: 8,
+  MIN_GUESTS: 1,
+  MAX_GUESTS: 10,
+  MIN_COMMENTS_COUNT: 0,
+  MAX_COMMENTS_COUNT: 50,
+};
+
