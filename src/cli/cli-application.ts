@@ -1,33 +1,31 @@
 import { Command } from './commands/command.interface.js';
 import { CommandParser } from './command-parser.js';
+import { Component } from '../shared/types/component.enum.js';
+import { injectable, inject } from 'inversify';
 
-type CommandCollection = Record<string, Command>;
-
+@injectable()
 export class CLIApplication {
-  private commands: CommandCollection = {};
-
   constructor(
+    @inject(Component.HelpCommand) private readonly helpCommand: Command,
+    @inject(Component.VersionCommand) private readonly versionCommand: Command,
+    @inject(Component.ImportCommand) private readonly importCommand: Command,
+    @inject(Component.GenerateCommand) private readonly generateCommand: Command,
     private readonly defaultCommand: string = '--help'
   ) {}
 
-  public registerCommands(commandList: Command[]): void {
-    commandList.forEach((command) => {
-      if (Object.hasOwn(this.commands, command.getName())) {
-        throw new Error(`Command ${command.getName()} is already registered`);
-      }
-      this.commands[command.getName()] = command;
-    });
-  }
-
   public getCommand(commandName: string): Command {
-    return this.commands[commandName] ?? this.getDefaultCommand();
+    const commands: { [key: string]: Command } = {
+      '--help': this.helpCommand,
+      '--version': this.versionCommand,
+      '--import': this.importCommand,
+      '--generate': this.generateCommand
+    };
+
+    return commands[commandName] ?? this.getDefaultCommand();
   }
 
-  public getDefaultCommand(): Command | never {
-    if (! this.commands[this.defaultCommand]) {
-      throw new Error(`The default command (${this.defaultCommand}) is not registered.`);
-    }
-    return this.commands[this.defaultCommand];
+  public getDefaultCommand(): Command {
+    return this.getCommand(this.defaultCommand);
   }
 
   public processCommand(argv: string[]): void {

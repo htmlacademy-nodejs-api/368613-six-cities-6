@@ -3,9 +3,15 @@ import { Cities, OfferType, Amenities, BooleanString, UserType } from '../../typ
 import { MockServerData } from '../../types/mock-server-data.type.js';
 import { generateRandomValue, getRandomItem, getRandomItems } from '../../helpers/index.js';
 import { limitsForMocks } from '../../constants/index.js';
+import { injectable } from 'inversify';
 
+@injectable()
 export class TSVOfferGenerator {
-  constructor(private readonly mockData: MockServerData) {}
+  private mockData: MockServerData;
+
+  public setMockData(mockData: MockServerData) {
+    this.mockData = mockData;
+  }
 
   public generate(): string {
     const title = getRandomItem(this.mockData.titles);

@@ -1,8 +1,17 @@
 import { Command } from './command.interface.js';
-import { TSVFileReader } from '../../shared/libs/file-reader/index.js';
+import { TSVFileReaderFactory } from '../../shared/libs/file-reader/index.js';
 import { createOffer, getErrorMessage } from '../../shared/helpers/index.js';
+import { inject, injectable } from 'inversify';
+import { Component } from '../../shared/types/index.js';
 
+@injectable()
 export class ImportCommand implements Command {
+  private fileReaderFactory: TSVFileReaderFactory;
+
+  constructor(@inject(Component.TSVFileReaderFactory) fileReaderFactory: TSVFileReaderFactory) {
+    this.fileReaderFactory = fileReaderFactory;
+  }
+
   public getName(): string {
     return '--import';
   }
@@ -18,10 +27,10 @@ export class ImportCommand implements Command {
 
   public async execute(...parameters: string[]): Promise<void> {
     const [filename] = parameters;
-    const fileReader = new TSVFileReader(filename.trim());
+    const fileReader = this.fileReaderFactory.createTSVFileReader(filename);
 
-    fileReader.on('line', this.onImportedLine);
-    fileReader.on('end', this.onCompleteImport);
+    fileReader.on('line', this.onImportedLine.bind(this));
+    fileReader.on('end', this.onCompleteImport.bind(this));
 
     try {
       await fileReader.read();
@@ -31,3 +40,4 @@ export class ImportCommand implements Command {
     }
   }
 }
+
