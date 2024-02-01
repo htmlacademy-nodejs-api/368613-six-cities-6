@@ -4,6 +4,7 @@ import { Config, RestSchema } from '../shared/libs/config/index.js';
 import { Component } from '../shared/types/index.js';
 import { DatabaseClient } from '../shared/libs/database-client/index.js';
 import { getMongoURI } from '../shared/helpers/index.js';
+import { UserModel } from '../shared/modules/user/index.js';
 
 @injectable()
 export class RestApplication {
@@ -31,5 +32,13 @@ export class RestApplication {
     this.logger.info('Connecting to the database…');
     await this.initDb();
     this.logger.info('Connected to the database.');
+
+    const user = await UserModel.create({
+      name: 'example',
+      email: 'example@example.com',
+      avatarPath: 'http://example.com/avatar.jpg',
+      userType: 'regular'
+    });
+    console.log(user);
   }
 }
