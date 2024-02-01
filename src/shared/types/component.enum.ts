@@ -11,4 +11,5 @@ export const Component = {
   FileWriter: Symbol.for('FileWriter'),
   OfferGenerator: Symbol.for('OfferGenerator'),
   TSVFileReaderFactory: Symbol.for('TSVFileReaderFactory'),
+  DatabaseClient: Symbol.for('DatabaseClient'),
 } as const;
