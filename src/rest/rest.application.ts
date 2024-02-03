@@ -34,10 +34,10 @@ export class RestApplication {
     this.logger.info('Connected to the database.');
 
     const user = await UserModel.create({
-      name: 'example',
-      email: 'example@example.com',
+      name: 'Maina',
+      email: 'marina@example.com',
       avatarPath: 'http://example.com/avatar.jpg',
-      userType: 'regular'
+      userType: 'pro'
     });
     console.log(user);
   }

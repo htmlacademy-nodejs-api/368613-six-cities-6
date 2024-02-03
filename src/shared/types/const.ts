@@ -1,7 +1,7 @@
 export const UserType = {
   Regular: 'regular',
   Pro: 'pro'
-} as const;
+};
 
 export const BooleanString = {
   TRUE: 'true',
@@ -42,3 +42,5 @@ export const Amenities = {
   Beachfront: 'Beachfront',
   BBQ: 'BBQ',
 } as const;
+
+export type EnumValues<T> = T[keyof T];
