@@ -5,6 +5,7 @@ import { CreateUserDto } from './dto/create-user.dto.js';
 import { inject, injectable } from 'inversify';
 import { Component } from '../../types/index.js';
 import { Logger } from '../../libs/logger/index.js';
+import mongoose from 'mongoose';
 
 @injectable()
 export class DefaultUserService implements UserService {
@@ -14,13 +15,21 @@ export class DefaultUserService implements UserService {
   ) {}
 
   public async create(dto: CreateUserDto, salt: string): Promise<DocumentType<UserEntity>> {
-    const user = new UserEntity(dto);
-    user.setPassword(dto.password, salt);
+    try {
+      const user = new UserEntity(dto);
+      user.setPassword(dto.password, salt);
+      console.log(`Creating user with userType: ${dto.userType}`);
 
-    const result = await this.userModel.create(user);
-    this.logger.info(`New user created: ${user.email}`);
+      const result = await this.userModel.create(user);
+      this.logger.info(`New user created: ${user.email}`);
 
-    return result;
+      return result;
+    } catch (error) {
+      if (error instanceof mongoose.Error.ValidationError && error.errors.userType) {
+        throw new Error('User type is required');
+      }
+      throw error;
+    }
   }
 
   public async findByEmail(email: string): Promise<DocumentType<UserEntity> | null> {
