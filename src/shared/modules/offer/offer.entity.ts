@@ -22,7 +22,7 @@ export class OfferEntity extends defaultClasses.TimeStamps{
   @prop({ required: true })
   public postDate!: Date;
 
-  @prop({ required: true, enum: Object.values(Cities) })
+  @prop({ required: true, enum: Object.values(Cities), type: String})
   public city!: EnumValues<typeof Cities>;
 
   @prop({ required: true })
@@ -40,7 +40,7 @@ export class OfferEntity extends defaultClasses.TimeStamps{
   @prop({ required: true, min: 1, max: 5 })
   public rating!: number;
 
-  @prop({ required: true, enum: Object.values(OfferType) })
+  @prop({ required: true, enum: Object.values(OfferType),type: String})
   public type!: EnumValues<typeof OfferType>;
 
   @prop({ required: true, min: 1, max: 8 })
@@ -61,7 +61,7 @@ export class OfferEntity extends defaultClasses.TimeStamps{
   @prop({ default: 0})
   public commentsCount!: number;
 
-  @prop({ required: true })
+  @prop({ required: true, type: () => Object, _id: false})
   public coordinates!: { latitude: number; longitude: number; };
 }
 

@@ -27,7 +27,10 @@ export function createOffer(offerData: string): Offer {
 
   const [latitude, longitude] = coordinates.split(',').map(Number);
   const userType = userTypeString as keyof typeof UserType;
-  const amenitiesKeys = amenities.split(',').map((amenity) => amenity.trim() as keyof typeof Amenities);
+  const amenitiesValues = amenities.split(',').map((amenityKey) => {
+    const key = amenityKey.trim() as keyof typeof Amenities;
+    return Amenities[key]; // Получаем значение из Amenities по ключу во время выполнения
+  });
 
   return {
     title,
@@ -40,7 +43,7 @@ export function createOffer(offerData: string): Offer {
     isFavorite: isFavorite === BooleanString.TRUE,
     rating: Number.parseFloat(rating),
     type: OfferType[type as keyof typeof OfferType],
-    amenities: amenitiesKeys,
+    amenities: amenitiesValues,
     rooms: Number.parseInt(rooms, 10),
     guests: Number.parseInt(guests, 10),
     cost: Number.parseInt(cost, 10),

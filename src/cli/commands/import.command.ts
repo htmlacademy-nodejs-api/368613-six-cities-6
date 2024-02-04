@@ -7,10 +7,10 @@ import { DefaultOfferService } from '../../shared/modules/offer/default-offer.se
 import { DefaultUserService } from '../../shared/modules/user/default-user.service.js';
 import { MongoDatabaseClient } from '../../shared/libs/database-client/mongo.database-client.js';
 import { Offer } from '../../shared/types/index.js';
-import { getMongoURI } from '../../shared/helpers/index.js';
+import { getMongoURI } from '../../shared/helpers/database.js';
 
 const DEFAULT_DB_PORT = '27017';
-export const DEFAULT_USER_PASSWORD = '123456';
+const DEFAULT_USER_PASSWORD = '123456';
 
 @injectable()
 export class ImportCommand implements Command {
