@@ -13,14 +13,14 @@ export class DefaultOfferService implements OfferService {
     @inject(Component.OfferModel) private readonly offerModel: types.ModelType<OfferEntity>,
   ) {}
 
-  public async createOffer(dto: CreateOfferDto, authorId: string): Promise<DocumentType<OfferEntity>> {
+  public async createOffer(dto: CreateOfferDto): Promise<DocumentType<OfferEntity>> {
+    console.log('Creating offer with DTO:', dto);
     try {
       const newOffer = new this.offerModel({
-        ...dto,
-        authorId,
+        ...dto
       });
       const savedOffer = await newOffer.save();
-      this.logger.info(`New offer created: ${savedOffer._id} by author ${authorId}`);
+      this.logger.info(`New offer created: ${savedOffer._id} by author`);
       return savedOffer;
     } catch (error) {
       this.logger.error('Error creating offer', error as Error);
@@ -28,17 +28,17 @@ export class DefaultOfferService implements OfferService {
     }
   }
 
-  public async editOffer(id: string, dto: CreateOfferDto, authorId: string): Promise<DocumentType<OfferEntity>> {
+  public async editOffer(id: string, dto: CreateOfferDto): Promise<DocumentType<OfferEntity>> {
     try {
       const updatedOffer = await this.offerModel.findOneAndUpdate(
-        { _id: id, authorId },
+        { _id: id},
         dto,
         { new: true }
       );
       if (!updatedOffer) {
         throw new Error(`Offer with ID ${id} not found or author mismatch`);
       }
-      this.logger.info(`Offer ${id} updated by author ${authorId}`);
+      this.logger.info(`Offer ${id} updated `);
       return updatedOffer;
     } catch (error) {
       this.logger.error('Error updating offer', error as Error);
@@ -46,13 +46,13 @@ export class DefaultOfferService implements OfferService {
     }
   }
 
-  public async deleteOffer(id: string, authorId: string): Promise<void> {
+  public async deleteOffer(id: string): Promise<void> {
     try {
-      const result = await this.offerModel.deleteOne({ _id: id, authorId });
+      const result = await this.offerModel.deleteOne({ _id: id});
       if (result.deletedCount === 0) {
         throw new Error(`Offer with ID ${id} not found or author mismatch`);
       }
-      this.logger.info(`Offer ${id} deleted by author ${authorId}`);
+      this.logger.info(`Offer ${id} deleted `);
     } catch (error) {
       this.logger.error('Error deleting offer:', error as Error);
       throw error;
