@@ -1,10 +1,12 @@
 import EventEmitter from 'node:events';
 import { createReadStream } from 'node:fs';
 import { FileReader } from './file-reader.interface.js';
+import { injectable } from 'inversify';
 
 const CHUNK_SIZE = 16384; // 16KB
 
-export class TSVFileReader extends EventEmitter implements FileReader {
+
+class TSVFileReader extends EventEmitter implements FileReader {
   constructor(private readonly filename: string) {
     super();
   }
@@ -27,10 +29,19 @@ export class TSVFileReader extends EventEmitter implements FileReader {
         remainingData = remainingData.slice(++nextLinePosition);
         importedRowCount++;
 
-        this.emit('line', completeRow);
+        await new Promise((resolve) => {
+          this.emit('line', completeRow, resolve);
+        });
       }
     }
 
     this.emit('end', importedRowCount);
+  }
+}
+
+@injectable()
+export class TSVFileReaderFactory {
+  createTSVFileReader(filename: string): TSVFileReader {
+    return new TSVFileReader(filename);
   }
 }
