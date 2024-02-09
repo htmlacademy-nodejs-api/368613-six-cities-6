@@ -8,28 +8,21 @@ import { DefaultUserService } from '../../shared/modules/user/default-user.servi
 import { MongoDatabaseClient } from '../../shared/libs/database-client/mongo.database-client.js';
 import { Offer } from '../../shared/types/index.js';
 import { getMongoURI } from '../../shared/helpers/database.js';
+import { Config, RestSchema } from '../../shared/libs/config/index.js';
 
-const DEFAULT_DB_PORT = '27017';
 const DEFAULT_USER_PASSWORD = '123456';
 
 @injectable()
 export class ImportCommand implements Command {
-  private fileReaderFactory: TSVFileReaderFactory;
-  private salt: string;
-
   constructor(
-    @inject(Component.TSVFileReaderFactory) fileReaderFactory: TSVFileReaderFactory,
-    @inject(Component.DatabaseClient) private readonly databaseClient: MongoDatabaseClient,
+    @inject(Component.TSVFileReaderFactory) private readonly fileReaderFactory: TSVFileReaderFactory,
     @inject(Component.UserService) private readonly userService: DefaultUserService,
     @inject(Component.OfferService) private readonly offerService: DefaultOfferService,
+    @inject(Component.DatabaseClient) private readonly databaseClient: MongoDatabaseClient,
+    @inject(Component.Config) private readonly config: Config<RestSchema>
   ) {
     this.onImportedLine = this.onImportedLine.bind(this);
     this.onCompleteImport = this.onCompleteImport.bind(this);
-
-    this.fileReaderFactory = fileReaderFactory;
-    this.databaseClient = databaseClient;
-    this.userService = userService;
-    this.offerService = offerService;
   }
 
   private async onImportedLine(line: string, resolve: () => void) {
@@ -45,10 +38,11 @@ export class ImportCommand implements Command {
   }
 
   private async saveOffer(offer: Offer) {
+    const salt = this.config.get('SALT');
     const user = await this.userService.findOrCreate({
       ...offer.author,
       password: DEFAULT_USER_PASSWORD
-    }, this.salt);
+    }, salt);
 
     await this.offerService.createOffer({
       authorId: user.id,
@@ -67,23 +61,29 @@ export class ImportCommand implements Command {
       cost: offer.cost,
       amenities: offer.amenities,
       commentsCount: offer.commentsCount,
-      coordinates: offer.coordinates
+      coordinates: offer.coordinates,
     });
-
   }
 
   public getName(): string {
     return '--import';
   }
 
-  public async execute(filename: string, login: string, password: string, host: string, dbname: string, salt: string): Promise<void> {
-    const uri = getMongoURI(login, password, host, DEFAULT_DB_PORT, dbname);
-    this.salt = salt;
+  public async execute(filename: string): Promise<void> {
+    console.info('Connecting to the database…');
+    const uri = getMongoURI(
+      this.config.get('DB_USER'),
+      this.config.get('DB_PASSWORD'),
+      this.config.get('DB_HOST'),
+      this.config.get('DB_PORT'),
+      this.config.get('DB_NAME')
+    );
 
     await this.databaseClient.connect(uri);
+    console.info('Connected to the database.');
+
 
     const fileReader = this.fileReaderFactory.createTSVFileReader(filename.trim());
-
     fileReader.on('line', this.onImportedLine);
     fileReader.on('end', this.onCompleteImport);
 

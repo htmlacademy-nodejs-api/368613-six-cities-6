@@ -5,6 +5,14 @@ import { Cities, OfferType, Amenities, EnumValues } from '../../types/index.js';
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface OfferEntity extends defaultClasses.Base {}
 
+class Coordinates {
+  @prop({ required: true })
+  public latitude!: number;
+
+  @prop({ required: true })
+  public longitude!: number;
+}
+
 @modelOptions({
   schemaOptions: {
     collection: 'offers',
@@ -61,7 +69,7 @@ export class OfferEntity extends defaultClasses.TimeStamps{
   @prop({ default: 0})
   public commentsCount!: number;
 
-  @prop({ required: true, type: () => Object, _id: false})
+  @prop({ required: true, type: () => Coordinates, _id: false})
   public coordinates!: { latitude: number; longitude: number; };
 }
 

@@ -19,6 +19,17 @@ export const Cities = {
   Berlin: 'Berlin',
 } as const;
 
+export const CityCoordinates = {
+  Paris: { latitude: 48.85661, longitude: 2.351499 },
+  Cologne: { latitude: 50.938361, longitude: 6.959974 },
+  Brussels: { latitude: 50.846557, longitude: 4.351697 },
+  Amsterdam: { latitude: 52.370216, longitude: 4.895168 },
+  Hamburg: { latitude: 53.550341, longitude: 10.000654 },
+  Dusseldorf: { latitude: 51.225402, longitude: 6.776314 },
+  Barcelona: { latitude: 41.385063, longitude: 2.173404 },
+  Berlin: { latitude: 52.520008, longitude: 13.404954 },
+} as const;
+
 export const OfferType = {
   apartment: 'apartment',
   house: 'house',

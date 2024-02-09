@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { Cities, OfferType, Amenities, BooleanString, UserType } from '../../types/const.js';
+import { Cities, OfferType, Amenities, BooleanString, UserType, CityCoordinates } from '../../types/const.js';
 import { MockServerData } from '../../types/mock-server-data.type.js';
 import { generateRandomValue, getRandomItem, getRandomItems } from '../../helpers/index.js';
 import { limitsForMocks } from '../../constants/index.js';
@@ -14,11 +14,16 @@ export class TSVOfferGenerator {
   }
 
   public generate(): string {
+    // Остальной код остается без изменений до выбора города
+    const city = getRandomItem(Object.keys(Cities)) as keyof typeof Cities;
+    // Получение координат для выбранного города
+    const { latitude, longitude } = CityCoordinates[city];
+
+    // Генерация остальных данных без изменений
     const title = getRandomItem(this.mockData.titles);
     const description = getRandomItem(this.mockData.descriptions);
     const previewImage = getRandomItem(this.mockData.photos);
     const photos = getRandomItems(this.mockData.photos).join(',');
-    const city = getRandomItem(Object.keys(Cities));
     const type = getRandomItem(Object.keys(OfferType));
     const amenities = getRandomItems(Object.keys(Amenities)).join(',');
 
@@ -31,15 +36,13 @@ export class TSVOfferGenerator {
     const cost = generateRandomValue(limitsForMocks.MIN_COST, limitsForMocks.MAX_COST).toString();
     const commentsCount = generateRandomValue(limitsForMocks.MIN_COMMENTS_COUNT, limitsForMocks.MAX_COMMENTS_COUNT).toString();
 
-    // Генерация данных автора
+    // Генерация данных автора без изменений
     const userName = getRandomItem(this.mockData.userNames);
     const userEmail = getRandomItem(this.mockData.userEmails);
     const userAvatar = getRandomItem(this.mockData.avatars);
     const userType = Math.random() < 0.5 ? UserType.Regular : UserType.Pro;
 
-    // Генерация координат
-    const latitude = generateRandomValue(-90, 90, 5).toString();
-    const longitude = generateRandomValue(-180, 180, 5).toString();
+    // Использование реальных координат
     const coordinates = `${latitude},${longitude}`;
 
     return [
