@@ -7,10 +7,10 @@ export interface OfferService {
   createOffer(dto: CreateOfferDto): Promise<DocumentType<OfferEntity>>;
   editOffer(offerId: string, dto: UpdateOfferDto): Promise<DocumentType<OfferEntity>>;
   deleteOffer(offerId: string): Promise<void>;
-  getOfferById(offerId: string): Promise<DocumentType<OfferEntity>>;
-  getAllOffers(limit: number): Promise<DocumentType<OfferEntity>[]>;
+  getOfferById(userId: string, offerId: string): Promise<DocumentType<OfferEntity> | null>;
+  getAllOffers(userId: string, limit: number): Promise<DocumentType<OfferEntity>[]>;
   exists(documentId: string): Promise<boolean>;
   updateRatingAndCommentCount(offerId: string, newRating: number): Promise<DocumentType<OfferEntity> | null>
-  getPremiumOffersByCity(city: string, limit?: number): Promise<DocumentType<OfferEntity>[]>;
+  getPremiumOffersByCity(userId: string, city: string, limit?: number): Promise<DocumentType<OfferEntity>[]>;
   getFavoriteOffersByUser(userId: string): Promise<DocumentType<OfferEntity>[]>;
 }
