@@ -3,6 +3,7 @@ import { DocumentType, types } from '@typegoose/typegoose';
 import { Logger } from '../../libs/logger/index.js';
 import { Component, SortType } from '../../types/index.js';
 import { UpdateOfferDto, OfferEntity, OfferService, CreateOfferDto, DEFAULT_OFFER_COUNT } from './index.js';
+import mongoose from 'mongoose';
 
 @injectable()
 export class DefaultOfferService implements OfferService {
@@ -109,20 +110,28 @@ export class DefaultOfferService implements OfferService {
   }
 
   public async getFavoriteOffersByUser(userId: string): Promise<DocumentType<OfferEntity>[]> {
+    const userIdObj = new mongoose.Types.ObjectId(userId); // Преобразуем строку в ObjectId
+
     return this.offerModel.aggregate([
       {
         $lookup: {
-          from: 'users',
-          let: { offerId: '$_id' },
-          pipeline: [
-            { $match: { $expr: { $eq: ['$_id', userId] } } },
-            { $project: { favoriteOffers: 1 } }
-          ],
-          as: 'userFavorites'
+          from: 'users', // Имя коллекции пользователей
+          localField: '_id', // Поле из текущего документа (offer)
+          foreignField: 'favoriteOffers', // Поле в документах пользователя, где хранятся избранные предложения
+          as: 'favorites' // Временное поле для хранения результатов lookup
         }
       },
-      { $unwind: '$userFavorites' },// unwind - развернуть массив favoriteOffers для каждого пользователя в отдельную запись в результате запроса чтобы можно было фильтровать по favoriteOffers
-      { $match: { 'userFavorites.favoriteOffers': { $in: ['$$offerId'] } } },
+      {
+        $addFields: {
+          isFavorite: {
+            $cond: {
+              if: { $in: [userIdObj, '$favorites'] }, // Проверяем, содержится ли userId в массиве favorites
+              then: true, // Если да, устанавливаем isFavorite в true
+              else: false // В противном случае в false
+            }
+          }
+        }
+      },
       {
         $project: {
           title: 1,
@@ -130,14 +139,14 @@ export class DefaultOfferService implements OfferService {
           city: 1,
           previewImage: 1,
           isPremium: 1,
-          isFavorite: 1,
+          isFavorite: 1, // динамически вычисляемое поле
           rating: 1,
           type: 1,
           cost: 1,
-          //authorId: 1,
           commentsCount: 1,
         }
       }
     ]).exec();
   }
 }
+
