@@ -3,7 +3,6 @@ import { DocumentType, types } from '@typegoose/typegoose';
 import { Logger } from '../../libs/logger/index.js';
 import { Component, SortType } from '../../types/index.js';
 import { UpdateOfferDto, OfferEntity, OfferService, CreateOfferDto, DEFAULT_OFFER_COUNT } from './index.js';
-import mongoose from 'mongoose';
 
 @injectable()
 export class DefaultOfferService implements OfferService {
@@ -111,33 +110,32 @@ export class DefaultOfferService implements OfferService {
 
   public async getFavoriteOffersByUser(userId: string): Promise<DocumentType<OfferEntity>[]> {
     return this.offerModel.aggregate([
-      // соединяем данные о пользователях и их избранных аггрегацией
       {
         $lookup: {
-          from: 'users', // Коллекция пользователей
-          localField: '_id',
-          foreignField: 'favoriteOffers',
+          from: 'users',
+          let: { offerId: '$_id' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$_id', userId] } } },
+            { $project: { favoriteOffers: 1 } }
+          ],
           as: 'userFavorites'
         }
       },
-      // фильтруем только те предложения, которые есть в избранном у текущего пользователя
-      {
-        $match: {
-          'userFavorites.userId': new mongoose.Types.ObjectId(userId) // userId должен быть передан в метод как параметр
-        }
-      },
-      // предложение избранное?
-      {
-        $addFields: {
-          isFavorite: {
-            $cond: { if: { $arrayElemAt: ['$userFavorites', 0] }, then: true, else: false }
-          }
-        }
-      },
-      // убираем ненужные поля
+      { $unwind: '$userFavorites' },// unwind - развернуть массив favoriteOffers для каждого пользователя в отдельную запись в результате запроса чтобы можно было фильтровать по favoriteOffers
+      { $match: { 'userFavorites.favoriteOffers': { $in: ['$$offerId'] } } },
       {
         $project: {
-          userFavorites: 0
+          title: 1,
+          postDate: 1,
+          city: 1,
+          previewImage: 1,
+          isPremium: 1,
+          isFavorite: 1,
+          rating: 1,
+          type: 1,
+          cost: 1,
+          //authorId: 1,
+          commentsCount: 1,
         }
       }
     ]).exec();
