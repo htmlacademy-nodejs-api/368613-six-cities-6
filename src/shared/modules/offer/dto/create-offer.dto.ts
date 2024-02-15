@@ -8,7 +8,6 @@ export class CreateOfferDto {
   previewImage: string;
   photos: string[];
   isPremium: boolean;
-  isFavorite: boolean;
   rating: number;
   type: EnumValues<typeof OfferType>;
   rooms: number;
