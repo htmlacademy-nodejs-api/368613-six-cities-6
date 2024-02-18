@@ -56,23 +56,22 @@ export class DefaultOfferService implements OfferService {
     }
   }
 
-  public async getOfferById(userId: string, offerId: string): Promise<DocumentType<OfferEntity> | null> {
+  public async getOfferById(offerId: string, userId?: string): Promise<DocumentType<OfferEntity> | null> {
     const offerObjectId = new mongoose.Types.ObjectId(offerId);
+    let pipeline: PipelineStage[] = [{ $match: { _id: offerObjectId } }];
 
-    const pipeline = [
-      { $match: { _id: offerObjectId } },
-      ...this.addFavoriteFlagPipeline(userId),
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'authorId',
-          foreignField: '_id',
-          as: 'author'
-        }
-      },
-      { $unwind: '$author' },
-      { $limit: 1 } //возвращается только один документ
-    ];
+    if (userId) {
+      pipeline = [...pipeline, ...this.addFavoriteFlagPipeline(userId)];
+    }
+
+    pipeline = [...pipeline, {
+      $lookup: {
+        from: 'users',
+        localField: 'authorId',
+        foreignField: '_id',
+        as: 'author'
+      }
+    }, { $unwind: '$author' }, { $limit: 1 }];
 
     const results = await this.offerModel.aggregate(pipeline).exec();
 
@@ -85,23 +84,26 @@ export class DefaultOfferService implements OfferService {
     }
   }
 
-
-  public async getAllOffers(userId: string, limit: number = DEFAULT_OFFER_COUNT): Promise<DocumentType<OfferEntity>[]> {
+  public async getAllOffers(userId?: string, limit: number = DEFAULT_OFFER_COUNT): Promise<DocumentType<OfferEntity>[]> {
     try {
-      const offers = await this.offerModel.aggregate([
-        { $sort: { createdAt: SortType.Down } },
-        { $limit: limit },
-        ...this.addFavoriteFlagPipeline(userId),
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'authorId',
-            foreignField: '_id',
-            as: 'authorId'
-          }
-        },
-        { $unwind: '$authorId' },
-      ]).exec();
+      let pipeline: PipelineStage[] = [{ $sort: { createdAt: SortType.Down } }, { $limit: limit }];
+
+      // Добавляем логику для авторизованных пользователей
+      if (userId) {
+        pipeline = [...pipeline, ...this.addFavoriteFlagPipeline(userId)];
+      }
+
+      // Добавляем информацию об авторе для всех офферов
+      pipeline = [...pipeline, {
+        $lookup: {
+          from: 'users',
+          localField: 'authorId',
+          foreignField: '_id',
+          as: 'authorId'
+        }
+      }, { $unwind: '$authorId' }];
+
+      const offers = await this.offerModel.aggregate(pipeline).exec();
       this.logger.info('All offers fetched');
       return offers;
     } catch (error) {
@@ -153,26 +155,33 @@ export class DefaultOfferService implements OfferService {
     ]).exec();
   }
 
-  public async getPremiumOffersByCity(userID: string, city: string, limit: number = DEFAULT_OFFER_COUNT): Promise<DocumentType<OfferEntity>[]> {
+  public async getPremiumOffersByCity(city: string, userID?: string, limit: number = DEFAULT_OFFER_COUNT): Promise<DocumentType<OfferEntity>[]> {
     try {
-      const offers = await this.offerModel.aggregate([
+      let pipeline: PipelineStage[] = [
         { $match: { city, isPremium: true } },
         { $sort: {createdAt: SortType.Down} },
         { $limit: limit },
-        ...this.addFavoriteFlagPipeline(userID),
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'authorId',
-            foreignField: '_id',
-            as: 'authorId'
-          }
-        },
-        { $unwind: '$authorId' },
-        {
-          $project: { title: 1, postDate: 1, city: 1, previewImage: 1, isPremium: 1, isFavorite: 1, rating: 1, type: 1, cost: 1, commentsCount: 1 }
+      ];
+
+      if (userID) {
+        pipeline = [...pipeline, ...this.addFavoriteFlagPipeline(userID)];
+      }
+
+      pipeline = [...pipeline, {
+        $lookup: {
+          from: 'users',
+          localField: 'authorId',
+          foreignField: '_id',
+          as: 'authorId'
         }
-      ]).exec();
+      }, { $unwind: '$authorId' },
+      {
+        $project: {
+          title: 1, postDate: 1, city: 1, previewImage: 1, isPremium: 1, isFavorite: 1, rating: 1, type: 1, cost: 1, commentsCount: 1
+        }
+      }];
+
+      const offers = await this.offerModel.aggregate(pipeline).exec();
       this.logger.info(`Premium offers fetched for city ${city}`);
       return offers;
     } catch (error) {
