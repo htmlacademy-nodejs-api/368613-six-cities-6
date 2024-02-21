@@ -5,7 +5,9 @@ import { Logger } from '../../libs/logger/index.js';
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { OfferService } from './offer-service.interface.js';
-import { ParamOfferId } from './type/param-offerid.type.js';
+import { ParamOfferId, QueryUserId } from './type/param-offerid.type.js';
+import { fillDTO } from '../../helpers/index.js';
+import { OfferRdo } from './rdo/offer.rdo.js';
 
 @injectable()
 export default class OfferController extends BaseController {
@@ -19,8 +21,9 @@ export default class OfferController extends BaseController {
     this.addRoute({ path: '/:offerId', method: HttpMethod.Get, handler: this.show });
   }
 
-  public async show({ params }: Request<ParamOfferId>, res: Response): Promise<void> {
-    const { offerId, userId } = params;
+  public async show({ params, query }: Request<ParamOfferId, QueryUserId>, res: Response): Promise<void> {
+    const { offerId } = params;
+    const userId = typeof query.userId === 'string' ? query.userId : '';
     const offer = await this.offerService.getOfferById(offerId, userId);
 
     if (! offer) {
@@ -31,6 +34,6 @@ export default class OfferController extends BaseController {
       );
     }
 
-    this.ok(res, offer);
+    this.ok(res, fillDTO(OfferRdo, offer));
   }
 }

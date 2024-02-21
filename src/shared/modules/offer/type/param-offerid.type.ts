@@ -1,6 +1,10 @@
-import { ParamsDictionary } from 'express-serve-static-core';
+import { ParamsDictionary, Query } from 'express-serve-static-core';
 
 export type ParamOfferId = {
   offerId: string;
-  userId: string;
 } | ParamsDictionary;
+
+export type QueryUserId = {
+  userId?: string;
+} | Query;
+
