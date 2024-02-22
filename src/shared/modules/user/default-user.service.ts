@@ -55,7 +55,7 @@ export class DefaultUserService implements UserService {
     return this.create(dto, salt);
   }
 
-  async addToFavorites(dto: FavoritesDto): Promise<DocumentType<UserEntity>> {
+  public async addToFavorites(dto: FavoritesDto): Promise<DocumentType<UserEntity>> {
     const { userId, offerId } = dto;
 
     const user = await this.userModel.findById(userId);
@@ -80,7 +80,7 @@ export class DefaultUserService implements UserService {
     return user;
   }
 
-  async removeFromFavorites(dto: FavoritesDto): Promise<DocumentType<UserEntity>> {
+  public async removeFromFavorites(dto: FavoritesDto): Promise<DocumentType<UserEntity>> {
     const { userId, offerId } = dto;
 
     const user = await this.userModel.findById(userId);

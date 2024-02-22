@@ -1,0 +1,4 @@
+# Получить объявление по идентификатору
+GET http://localhost:4000/offers/65d233b767a0555dc4f3e44b?userId=65d233b767a0555dc4f3e449 HTTP/1.1
+
+###

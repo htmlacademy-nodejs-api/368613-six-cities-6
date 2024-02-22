@@ -56,60 +56,6 @@ export class DefaultOfferService implements OfferService {
     }
   }
 
-  public async getOfferById(userId: string, offerId: string): Promise<DocumentType<OfferEntity> | null> {
-    const offerObjectId = new mongoose.Types.ObjectId(offerId);
-
-    const pipeline = [
-      { $match: { _id: offerObjectId } },
-      ...this.addFavoriteFlagPipeline(userId),
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'authorId',
-          foreignField: '_id',
-          as: 'author'
-        }
-      },
-      { $unwind: '$author' },
-      { $limit: 1 } //возвращается только один документ
-    ];
-
-    const results = await this.offerModel.aggregate(pipeline).exec();
-
-    if (results.length > 0) {
-      this.logger.info(`Offer with ID ${offerId} found`);
-      return results[0]; // Возвращаем первый (и единственный) результат агрегации
-    } else {
-      this.logger.warn(`Offer with ID ${offerId} not found`);
-      return null; // Возвращаем null, если оффер не найден
-    }
-  }
-
-
-  public async getAllOffers(userId: string, limit: number = DEFAULT_OFFER_COUNT): Promise<DocumentType<OfferEntity>[]> {
-    try {
-      const offers = await this.offerModel.aggregate([
-        { $sort: { createdAt: SortType.Down } },
-        { $limit: limit },
-        ...this.addFavoriteFlagPipeline(userId),
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'authorId',
-            foreignField: '_id',
-            as: 'authorId'
-          }
-        },
-        { $unwind: '$authorId' },
-      ]).exec();
-      this.logger.info('All offers fetched');
-      return offers;
-    } catch (error) {
-      this.logger.error('Error fetching all offers:', error as Error);
-      throw error;
-    }
-  }
-
   public async exists(documentId: string): Promise<boolean> {
     return (await this.offerModel
       .exists({_id: documentId})) !== null;
@@ -133,48 +79,79 @@ export class DefaultOfferService implements OfferService {
     }, { new: true }).exec();
   }
 
-  public async getFavoriteOffersByUser(userId: string): Promise<DocumentType<OfferEntity>[]> {
-    return this.offerModel.aggregate([
-      { $match: { isFavorite: true } },
-      { $sort: {createdAt: SortType.Down} },
-      ...this.addFavoriteFlagPipeline(userId),
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'authorId',
-          foreignField: '_id',
-          as: 'authorId'
-        }
-      },
-      { $unwind: '$authorId' },
-      {
-        $project: { title: 1, postDate: 1, city: 1, previewImage: 1, isPremium: 1, isFavorite: 1, rating: 1, type: 1, cost: 1, commentsCount: 1 }
-      }
-    ]).exec();
+  public async getOfferById(offerId: string, userId?: string): Promise<DocumentType<OfferEntity> | null> {
+    const offerObjectId = new mongoose.Types.ObjectId(offerId);
+    let pipeline: PipelineStage[] = [{ $match: { _id: offerObjectId } }];
+
+    if (userId) {
+      pipeline = [...pipeline, ...this.addFavoriteFlagPipeline(userId)];
+    }
+
+    const results = await this.offerModel.aggregate(pipeline).exec();
+
+    if (results.length > 0) {
+      this.logger.info(`Offer with ID ${offerId} found`);
+      const offer = results[0]; // первый (и единственный) результат запроса
+      return this.offerModel.populate(offer, { path: 'authorId' }); // Pass the second argument as an object with 'path' property
+    } else {
+      this.logger.warn(`Offer with ID ${offerId} not found`);
+      return null; // null, если оффер не найден
+    }
   }
 
-  public async getPremiumOffersByCity(userID: string, city: string, limit: number = DEFAULT_OFFER_COUNT): Promise<DocumentType<OfferEntity>[]> {
+  public async getAllOffers(userId?: string, limit: number = DEFAULT_OFFER_COUNT): Promise<DocumentType<OfferEntity>[]> {
+    try {
+      let pipeline: PipelineStage[] = [{ $sort: { createdAt: SortType.Down } }, { $limit: limit }];
+
+      // для авторизованных пользователей
+      if (userId) {
+        pipeline = [...pipeline, ...this.addFavoriteFlagPipeline(userId)];
+      }
+
+      const offers = await this.offerModel.aggregate(pipeline).exec();
+      this.logger.info('All offers fetched');
+
+      // Populate the authorId field
+      return this.offerModel.populate(offers, { path: 'authorId' });
+    } catch (error) {
+      this.logger.error('Error fetching all offers:', error as Error);
+      throw error;
+    }
+  }
+
+  public async getFavoriteOffersByUser(userId: string): Promise<DocumentType<OfferEntity>[]> {
     try {
       const offers = await this.offerModel.aggregate([
-        { $match: { city, isPremium: true } },
-        { $sort: {createdAt: SortType.Down} },
-        { $limit: limit },
-        ...this.addFavoriteFlagPipeline(userID),
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'authorId',
-            foreignField: '_id',
-            as: 'authorId'
-          }
-        },
-        { $unwind: '$authorId' },
-        {
-          $project: { title: 1, postDate: 1, city: 1, previewImage: 1, isPremium: 1, isFavorite: 1, rating: 1, type: 1, cost: 1, commentsCount: 1 }
-        }
+        { $sort: { createdAt: SortType.Down } },
+        ...this.addFavoriteFlagPipeline(userId),
+        { $match: { isFavorite: true } }
       ]).exec();
+
+      // Populate the authorId field
+      return this.offerModel.populate(offers, { path: 'authorId' });
+    } catch (error) {
+      this.logger.error('Error fetching favorite offers by user:', error as Error);
+      throw error;
+    }
+  }
+
+  public async getPremiumOffersByCity(city: string, userID?: string, limit: number = DEFAULT_OFFER_COUNT): Promise<DocumentType<OfferEntity>[]> {
+    try {
+      let pipeline: PipelineStage[] = [
+        { $match: { city, isPremium: true } },
+        { $sort: { createdAt: SortType.Down } },
+        { $limit: limit },
+      ];
+
+      if (userID) {
+        pipeline = [...pipeline, ...this.addFavoriteFlagPipeline(userID)];
+      }
+
+      const offers = await this.offerModel.aggregate(pipeline).exec();
       this.logger.info(`Premium offers fetched for city ${city}`);
-      return offers;
+
+      // Populate the authorId field
+      return this.offerModel.populate(offers, { path: 'authorId' });
     } catch (error) {
       this.logger.error('Error fetching premium offers by city:', error as Error);
       throw error;
@@ -191,9 +168,8 @@ export class DefaultOfferService implements OfferService {
           let: { offerId: '$_id' },
           pipeline: [
             { $match: { _id: userIdObj } },
-            { $project: { favoriteOffers: 1 } },
             { $unwind: '$favoriteOffers' },
-            { $match: { 'favoriteOffers': { $eq: '$$offerId' } } },
+            { $match: { $expr: { $eq: ['$$offerId', '$favoriteOffers'] } } },
           ],
           as: 'isFavoriteArray'
         }

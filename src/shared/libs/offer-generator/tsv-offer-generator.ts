@@ -29,7 +29,7 @@ export class TSVOfferGenerator {
 
     const postDate = dayjs().subtract(generateRandomValue(1, 30), 'day').format('YYYY-MM-DD');
     const isPremium = Math.random() < 0.5 ? BooleanString.TRUE : BooleanString.FALSE;
-    const isFavorite = Math.random() < 0.5 ? BooleanString.TRUE : BooleanString.FALSE;
+    //const isFavorite = Math.random() < 0.5 ? BooleanString.TRUE : BooleanString.FALSE;
     const rating = generateRandomValue(limitsForMocks.MIN_RATING, limitsForMocks.MAX_RATING, 1).toString();
     const rooms = generateRandomValue(limitsForMocks.MIN_ROOMS, limitsForMocks.MAX_ROOMS).toString();
     const guests = generateRandomValue(limitsForMocks.MIN_GUESTS, limitsForMocks.MAX_GUESTS).toString();
@@ -47,7 +47,7 @@ export class TSVOfferGenerator {
 
     return [
       title, description, postDate, city, previewImage, photos,
-      isPremium, isFavorite, rating, type, rooms,
+      isPremium, /*isFavorite,*/ rating, type, rooms,
       guests, cost, amenities, userName, userEmail,
       userAvatar, userType, commentsCount, coordinates
     ].join('\t');

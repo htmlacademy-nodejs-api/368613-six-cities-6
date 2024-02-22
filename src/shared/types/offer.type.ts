@@ -9,7 +9,7 @@ export type Offer = {
     previewImage: string;
     photos: string[]; // URL фотографий
     isPremium: boolean;
-    isFavorite: boolean;
+    //isFavorite: boolean;
     rating: number; // От 1 до 5
     type: EnumValues<typeof OfferType>; // Тип предложения
     rooms: number; // Мин. 1, Макс. 8

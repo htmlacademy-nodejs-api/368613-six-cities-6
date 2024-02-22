@@ -29,7 +29,7 @@ export class UserEntity extends defaultClasses.TimeStamps implements User {
   @prop({ required: true, default: '' })
   private password?: string;
 
-  @prop({ ref: () => OfferEntity, default: [] })
+  @prop({ ref: 'OfferEntity', default: [] })// () => OfferEntity
   public favoriteOffers: Ref<OfferEntity>[];
 
   constructor(userData: User) {
