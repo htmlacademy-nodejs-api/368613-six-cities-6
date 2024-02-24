@@ -27,9 +27,6 @@ export class OfferEntity extends defaultClasses.TimeStamps{
   @prop({ required: true })
   public description!: string;
 
-  @prop({ required: true })
-  public postDate!: Date;
-
   @prop({ required: true, enum: Object.values(Cities), type: String})
   public city!: EnumValues<typeof Cities>;
 
@@ -42,7 +39,7 @@ export class OfferEntity extends defaultClasses.TimeStamps{
   @prop({ required: true })
   public isPremium!: boolean;
 
-  @prop({ required: true, min: 1, max: 5 })
+  @prop({ required: true, default: 0 })
   public rating!: number;
 
   @prop({ required: true, enum: Object.values(OfferType),type: String})
@@ -66,8 +63,8 @@ export class OfferEntity extends defaultClasses.TimeStamps{
   })
   public authorId!: Ref<UserEntity>;
 
-  @prop({ default: 0})
-  public commentsCount!: number;
+  @prop({ default: 0 })
+  public commentsCount?: number;
 
   @prop({ required: true, type: () => Coordinates, _id: false})
   public coordinates!: { latitude: number; longitude: number; };

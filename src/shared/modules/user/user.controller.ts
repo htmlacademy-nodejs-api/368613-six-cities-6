@@ -4,13 +4,14 @@ import { StatusCodes } from 'http-status-codes';
 import { BaseController, HttpError, HttpMethod } from '../../libs/rest/index.js';
 import { Logger } from '../../libs/logger/index.js';
 import { Component } from '../../types/index.js';
-import { CreateUserRequest } from './create-user-request.type.js';
+import { CreateUserRequest } from './type/create-user-request.type.js';
 import { UserService } from './user-service.interface.js';
 import { Config, RestSchema } from '../../libs/config/index.js';
 import { fillDTO } from '../../helpers/index.js';
-import { UserRdo } from './rdo/user.rdo.js';
-import { LoginUserRequest } from './login-user-request.type.js';
-import { AddFavoriteRequest, RemoveFavoriteRequest } from './favorite-request.type.js';
+import { UserRdo} from './rdo/user.rdo.js';
+import { FavoritesRdo } from './rdo/favorites.rdo.js';
+import { LoginUserRequest } from './type/login-user-request.type.js';
+import { AddFavoriteRequest, RemoveFavoriteRequest } from './type/favorite-request.type.js';
 
 @injectable()
 export class UserController extends BaseController {
@@ -24,7 +25,7 @@ export class UserController extends BaseController {
 
     this.addRoute({ path: '/register', method: HttpMethod.Post, handler: this.create });
     this.addRoute({ path: '/login', method: HttpMethod.Post, handler: this.login });
-    this.addRoute({ path: '/favorites', method: HttpMethod.Post, handler: this.addToFavorites });
+    this.addRoute({ path: '/favorites', method: HttpMethod.Patch, handler: this.addToFavorites });
     this.addRoute({ path: '/favorites', method: HttpMethod.Delete, handler: this.removeFromFavorites });
   }
 
@@ -72,7 +73,7 @@ export class UserController extends BaseController {
     res: Response,
   ): Promise<void> {
     const user = await this.userService.addToFavorites(body);
-    this.ok(res, fillDTO(UserRdo, user));
+    this.ok(res, fillDTO(FavoritesRdo, user));
   }
 
   public async removeFromFavorites(
@@ -80,7 +81,7 @@ export class UserController extends BaseController {
     res: Response,
   ): Promise<void> {
     const user = await this.userService.removeFromFavorites(body);
-    this.ok(res, fillDTO(UserRdo, user));
+    this.ok(res, fillDTO(FavoritesRdo, user));
   }
 }
 

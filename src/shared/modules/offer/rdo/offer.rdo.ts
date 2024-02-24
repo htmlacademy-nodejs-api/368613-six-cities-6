@@ -13,7 +13,7 @@ export class OfferRdo {
     description: string;
 
   @Expose()
-    postDate: Date;
+    createdAt: Date;
 
   @Expose()
     city: EnumValues<typeof Cities>;

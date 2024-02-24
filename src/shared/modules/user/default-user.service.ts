@@ -8,7 +8,8 @@ import { Logger } from '../../libs/logger/index.js';
 import mongoose from 'mongoose';
 import { DefaultOfferService } from '../offer/index.js';
 import { FavoritesDto } from './dto/favorite.dto.js';
-import { Types } from 'mongoose';
+import { HttpError } from '../../libs/rest/index.js';
+import { StatusCodes } from 'http-status-codes';
 
 
 @injectable()
@@ -21,6 +22,7 @@ export class DefaultUserService implements UserService {
 
   public async create(dto: CreateUserDto, salt: string): Promise<DocumentType<UserEntity>> {
     try {
+      console.log(dto);
       const user = new UserEntity(dto);
       user.setPassword(dto.password, salt);
       console.log(`Creating user with userType: ${dto.userType}`);
@@ -65,15 +67,16 @@ export class DefaultUserService implements UserService {
 
     const offerExists = await this.offerService.exists(offerId);
     if (!offerExists) {
-      throw new Error('Offer not found');
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `Offer with id ${offerId} not found.`,
+        'OfferController'
+      );
     }
 
-    // Преобразуем offerId в ObjectId для совместимости с Typegoose
-    const offerObjectId = new Types.ObjectId(offerId);
-
     // Проверяем, есть ли уже такой offerId в массиве favoriteOffers
-    if (!user.favoriteOffers.map((id) => id.toString()).includes(offerId)) {
-      user.favoriteOffers.push(offerObjectId); // Добавляем ObjectId, а не строку
+    if (!user.favoriteOffers.includes(offerId)) {
+      user.favoriteOffers.push(offerId); // Добавляем строку, а не ObjectId
       await user.save();
     }
 
@@ -90,12 +93,23 @@ export class DefaultUserService implements UserService {
 
     const offerExists = await this.offerService.exists(offerId);
     if (!offerExists) {
-      throw new Error('Offer not found');
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `Offer with id ${offerId} not found.`,
+        'OfferController'
+      );
     }
     // Удаляем offerId из массива favoriteOffers
-    user.favoriteOffers = user.favoriteOffers.filter((id) => id.toString() !== offerId);
+    user.favoriteOffers = user.favoriteOffers.filter((id) => id !== offerId);
     await user.save();
 
     return user;
+  }
+
+  public async removeFavoriteFromAllUsers(offerId: string): Promise<void> {
+    await this.userModel.updateMany(
+      { favoriteOffers: offerId },
+      { $pull: { favoriteOffers: offerId } }
+    );
   }
 }
