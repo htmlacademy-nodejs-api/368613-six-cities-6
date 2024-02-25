@@ -1,5 +1,5 @@
 # Получить объявление по идентификатору
-GET http://localhost:4000/offers/65d7e009e600008320ee37b7?userId=65d7e009e600008320ee37b5 HTTP/1.1
+GET http://localhost:4000/offers/65db25c644508526ff25b319?userId=65d7e009e600008320ee37b5 HTTP/1.1
 
 ###
 
@@ -40,7 +40,7 @@ Content-Type: application/json
 ###
 
 #Удалить объявление
-DELETE http://localhost:4000/offers/65da2788ed71919871039ddb HTTP/1.1
+DELETE http://localhost:4000/offers/65db2557001279740395fefa HTTP/1.1
 
 ###
 

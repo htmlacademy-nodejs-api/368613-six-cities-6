@@ -27,17 +27,10 @@ export class DefaultOfferService implements OfferService {
   ) {}
 
   public async createOffer(dto: CreateOfferDto): Promise<DocumentType<OfferEntity>> {
-    try {
-      const newOffer = new this.offerModel({
-        ...dto,
-      });
-      const savedOffer = await newOffer.save();
-      this.logger.info(`New offer created: ${savedOffer._id} by author`);
-      return savedOffer;
-    } catch (error) {
-      this.logger.error('Error creating offer', error as Error);
-      throw error;
-    }
+    const savedOffer = await this.offerModel.create(dto);
+    console.log(savedOffer);
+    this.logger.info(`New offer created: ${savedOffer.title} by author`);
+    return savedOffer;
   }
 
   public async editOffer(offerId: string, dto: UpdateOfferDto): Promise<DocumentType<OfferEntity>> {

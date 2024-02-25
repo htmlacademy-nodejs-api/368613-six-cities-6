@@ -58,7 +58,7 @@ export class OfferEntity extends defaultClasses.TimeStamps{
   public amenities!: EnumValues<typeof Amenities>[];
 
   @prop({
-    ref: () => UserEntity,
+    ref: UserEntity,
     required: true
   })
   public authorId!: Ref<UserEntity>;
@@ -66,7 +66,7 @@ export class OfferEntity extends defaultClasses.TimeStamps{
   @prop({ default: 0 })
   public commentsCount?: number;
 
-  @prop({ required: true, type: () => Coordinates, _id: false})
+  @prop({ required: true, type: Coordinates, _id: false})
   public coordinates!: { latitude: number; longitude: number; };
 }
 
