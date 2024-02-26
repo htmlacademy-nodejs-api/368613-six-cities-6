@@ -1,4 +1,10 @@
+import { IsMongoId} from 'class-validator';
+import { favoriteValidationMessages } from './favorite.validation-messages.js';
+
 export class FavoritesDto {
-  userId: string;
-  offerId: string;
+  @IsMongoId({ message: favoriteValidationMessages.userId.isMongoId })
+    userId: string;
+
+  @IsMongoId({ message: favoriteValidationMessages.offerId.isMongoId })
+    offerId: string;
 }

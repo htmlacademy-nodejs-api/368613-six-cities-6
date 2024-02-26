@@ -98,7 +98,7 @@ export class DefaultOfferService implements OfferService {
       ...this.addFavoriteFlagPipeline(userId)];
 
     const results = await this.offerModel.aggregate(pipeline).exec();
-
+    console.log('из шоу', results);
     if (results.length > 0) {
       this.logger.info(`Offer with ID ${offerId} found`);
       const offer = results[0]; // первый (и единственный) результат запроса
@@ -109,10 +109,12 @@ export class DefaultOfferService implements OfferService {
     }
   }
 
-  public async getAllOffers(userId?: string, count?: number): Promise<DocumentType<OfferEntity>[]> {
+  public async getAllOffers(userId?: string, city?: string, count?: number): Promise<DocumentType<OfferEntity>[]> {
     const limit = count ?? DEFAULT_OFFER_COUNT;
     try {
+      const matchStage = city ? { city } : {};
       const pipeline: PipelineStage[] = [
+        { $match: matchStage },
         { $sort: { createdAt: SortType.Down } },
         { $limit: limit },
         ...ID_TO_STRING_PIPELINE,
@@ -129,15 +131,16 @@ export class DefaultOfferService implements OfferService {
     }
   }
 
-  public async getFavoriteOffersByUser(userId: string, count?: number): Promise<DocumentType<OfferEntity>[]> {
+  public async getFavoriteOffersByUser(userId: string, city?: string, count?: number): Promise<DocumentType<OfferEntity>[]> {
     const limit = count ?? DEFAULT_OFFER_COUNT;
     try {
+      const matchStage = city ? { isFavorite: true, city } : { isFavorite: true };
       const offers = await this.offerModel.aggregate([
         { $sort: { createdAt: SortType.Down } },
         { $limit: limit },
         ...ID_TO_STRING_PIPELINE,
         ...this.addFavoriteFlagPipeline(userId),
-        { $match: { isFavorite: true } },
+        { $match: matchStage }
       ]).exec();
 
       return this.offerModel.populate(offers, { path: 'authorId' });
@@ -147,11 +150,13 @@ export class DefaultOfferService implements OfferService {
     }
   }
 
-  public async getPremiumOffersByCity(city: string, userID?: string, count?: number): Promise<DocumentType<OfferEntity>[]> {
+  public async getPremiumOffers(city?: string, userID?: string, count?: number): Promise<DocumentType<OfferEntity>[]> {
     const limit = count ?? PREMIUM_OFFER_COUNT;
     try {
+      const matchStage = city ? { isPremium: true, city } : { isPremium: true };
+
       const pipeline: PipelineStage[] = [
-        { $match: { city, isPremium: true } },
+        { $match: matchStage },
         { $sort: { createdAt: SortType.Down } },
         { $limit: limit },
         ...ID_TO_STRING_PIPELINE,
@@ -159,7 +164,7 @@ export class DefaultOfferService implements OfferService {
       ];
 
       const offers = await this.offerModel.aggregate(pipeline).exec();
-      this.logger.info(`Premium offers fetched for city ${city}`);
+      this.logger.info(`Premium offers fetched ${city ? `for city ${ city}` : ''}`);
       return this.offerModel.populate(offers, { path: 'authorId' });
     } catch (error) {
       this.logger.error('Error fetching premium offers by city:', error as Error);

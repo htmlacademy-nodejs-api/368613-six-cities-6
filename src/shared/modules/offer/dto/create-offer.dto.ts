@@ -1,8 +1,8 @@
-import { IsString, IsEnum, IsUrl, IsBoolean, Min, Max, ArrayMinSize, ArrayMaxSize,
-  ArrayNotEmpty, IsLatitude, IsLongitude, ValidateNested, IsInt, IsMongoId, Length } from 'class-validator';
+import { IsString, IsEnum, IsBoolean, Min, Max, ArrayMinSize, ArrayMaxSize,
+  ArrayNotEmpty, IsLatitude, IsLongitude, ValidateNested, IsInt, IsMongoId, Length, MaxLength } from 'class-validator';
 import { Cities, OfferType, Amenities, EnumValues } from '../../../types/index.js';
 import { Type } from 'class-transformer';
-import { validationMessages } from './create-offer.validation-masseges.js';
+import { validationMessages } from './create-offer.validation-messages.js';
 
 export class CoordinatesDto {
   @IsLatitude({ message: validationMessages.coordinates.latitude.isLatitude })
@@ -24,10 +24,10 @@ export class CreateOfferDto {
   @IsEnum(Cities, { message: validationMessages.city.isEnum })
     city: EnumValues<typeof Cities>;
 
-  @IsUrl({}, { message: validationMessages.previewImage.isUrl })
+  @MaxLength(256, { message: validationMessages.previewImage.maxLength })
     previewImage: string;
 
-  @IsString({ each: true, message: validationMessages.photos.isString })
+  @MaxLength(256, { each: true, message: validationMessages.photos.maxLength })
   @ArrayMinSize(1, { message: validationMessages.photos.arrayMinSize })
   @ArrayMaxSize(6, { message: validationMessages.photos.arrayMaxSize })
   @ArrayNotEmpty({ message: validationMessages.photos.arrayNotEmpty })

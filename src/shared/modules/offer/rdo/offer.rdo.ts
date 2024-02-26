@@ -2,6 +2,7 @@ import { EnumValues, Cities, OfferType, Amenities } from '../../../types/index.j
 import { Expose, Type } from 'class-transformer';
 import { UserRdo } from '../../user/rdo/user.rdo.js';
 
+
 export class OfferRdo {
   @Expose()
     id: string;

@@ -1,7 +1,7 @@
 import { inject, injectable } from 'inversify';
 import { Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { BaseController, HttpError, HttpMethod } from '../../libs/rest/index.js';
+import { BaseController, HttpError, HttpMethod, ValidateDtoMiddleware, DocumentExistsMiddleware } from '../../libs/rest/index.js';
 import { Logger } from '../../libs/logger/index.js';
 import { Component } from '../../types/index.js';
 import { CreateUserRequest } from './type/create-user-request.type.js';
@@ -12,6 +12,10 @@ import { UserRdo} from './rdo/user.rdo.js';
 import { FavoritesRdo } from './rdo/favorites.rdo.js';
 import { LoginUserRequest } from './type/login-user-request.type.js';
 import { AddFavoriteRequest, RemoveFavoriteRequest } from './type/favorite-request.type.js';
+import { OfferService } from '../offer/index.js';
+import { CreateUserDto } from './dto/create-user.dto.js';
+import { LoginUserDto } from './dto/login-user.dto.js';
+import { FavoritesDto } from './dto/favorite.dto.js';
 
 @injectable()
 export class UserController extends BaseController {
@@ -19,14 +23,36 @@ export class UserController extends BaseController {
     @inject(Component.Logger) protected readonly logger: Logger,
     @inject(Component.UserService) private readonly userService: UserService,
     @inject(Component.Config) private readonly configService: Config<RestSchema>,
+    @inject(Component.OfferService) private readonly offerService: OfferService,
   ) {
     super(logger);
     this.logger.info('Register routes for UserController…');
 
-    this.addRoute({ path: '/register', method: HttpMethod.Post, handler: this.create });
-    this.addRoute({ path: '/login', method: HttpMethod.Post, handler: this.login });
-    this.addRoute({ path: '/favorites', method: HttpMethod.Patch, handler: this.addToFavorites });
-    this.addRoute({ path: '/favorites', method: HttpMethod.Delete, handler: this.removeFromFavorites });
+    this.addRoute({
+      path: '/register',
+      method: HttpMethod.Post,
+      handler: this.create,
+      middlewares: [new ValidateDtoMiddleware(CreateUserDto)] });
+    this.addRoute({
+      path: '/login',
+      method: HttpMethod.Post,
+      handler: this.login,
+      middlewares: [new ValidateDtoMiddleware(LoginUserDto)]});
+    this.addRoute({
+      path: '/favorite',
+      method: HttpMethod.Patch,
+      handler: this.addToFavorites,
+      middlewares: [
+        new ValidateDtoMiddleware(FavoritesDto),
+        new DocumentExistsMiddleware(this.offerService, 'Offer', 'offerId', true)
+      ]
+    });
+    this.addRoute({
+      path: '/favorite',
+      method: HttpMethod.Delete,
+      handler: this.removeFromFavorites,
+      middlewares: [new DocumentExistsMiddleware(this.offerService, 'Offer', 'offerId', true)]
+    });
   }
 
   public async create(

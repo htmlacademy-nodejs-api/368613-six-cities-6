@@ -12,10 +12,10 @@ export const validationMessages = {
     isEnum: 'City must be one of the predefined values',
   },
   previewImage: {
-    isUrl: 'Preview image must be a valid URL',
+    maxLength: 'PreviewImage must be a string with a maximum length of 256 characters',
   },
   photos: {
-    isString: 'Each photo must be a string',
+    maxLength: 'Each photo must be a string with a maximum length of 256 characters',
     arrayMinSize: 'There must be at least 6 photos',
     arrayMaxSize: 'There must be no more than 6 photos',
     arrayNotEmpty: 'Photos array must not be empty',
