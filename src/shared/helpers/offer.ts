@@ -5,13 +5,10 @@ export function createOffer(offerData: string): Offer {
   const [
     title,
     description,
-    postDate,
     city,
     previewImage,
     photos,
     isPremium,
-    //isFavorite,
-    rating,
     type,
     rooms,
     guests,
@@ -21,7 +18,6 @@ export function createOffer(offerData: string): Offer {
     email,
     avatarPath,
     userTypeString,
-    commentsCount,
     coordinates
   ] = offerData.replace('\n', '').split('\t');
 
@@ -35,20 +31,16 @@ export function createOffer(offerData: string): Offer {
   return {
     title,
     description,
-    postDate: new Date(postDate),
     city: Cities[city as keyof typeof Cities],
     previewImage,
     photos: photos.split(','),
     isPremium: isPremium === BooleanString.TRUE,
-    //isFavorite: isFavorite === BooleanString.TRUE,
-    rating: Number.parseFloat(rating),
     type: OfferType[type as keyof typeof OfferType],
     amenities: amenitiesValues,
     rooms: Number.parseInt(rooms, 10),
     guests: Number.parseInt(guests, 10),
     cost: Number.parseInt(cost, 10),
     author: { name, email, avatarPath, userType },
-    commentsCount: Number.parseInt(commentsCount, 10),
     coordinates: { latitude, longitude }
   };
 }

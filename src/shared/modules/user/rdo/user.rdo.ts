@@ -14,7 +14,4 @@ export class UserRdo {
   @Expose()
     userType: EnumValues<typeof UserType>;
 
-  @Expose()
-    favoriteOffers: string[];
-
 }

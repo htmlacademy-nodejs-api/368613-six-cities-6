@@ -2,10 +2,22 @@ import { inject, injectable } from 'inversify';
 import { DocumentType, types } from '@typegoose/typegoose';
 import { Logger } from '../../libs/logger/index.js';
 import { Component, SortType } from '../../types/index.js';
-import { UpdateOfferDto, OfferEntity, OfferService, CreateOfferDto, DEFAULT_OFFER_COUNT } from './index.js';
+import { UpdateOfferDto, OfferEntity, OfferService, CreateOfferDto, DEFAULT_OFFER_COUNT, PREMIUM_OFFER_COUNT } from './index.js';
 import mongoose from 'mongoose';
 import { PipelineStage } from 'mongoose';
 
+const ID_TO_STRING_PIPELINE: PipelineStage[] = [
+  {
+    $addFields: {
+      id: { $toString: '$_id' } // Преобразуем _id в строку и сохраняем в поле id
+    }
+  },
+  {
+    $project: {
+      _id: 0 // Удаляем поле _id
+    }
+  }
+];
 
 @injectable()
 export class DefaultOfferService implements OfferService {
@@ -15,17 +27,10 @@ export class DefaultOfferService implements OfferService {
   ) {}
 
   public async createOffer(dto: CreateOfferDto): Promise<DocumentType<OfferEntity>> {
-    try {
-      const newOffer = new this.offerModel({
-        ...dto
-      });
-      const savedOffer = await newOffer.save();
-      this.logger.info(`New offer created: ${savedOffer._id} by author`);
-      return savedOffer;
-    } catch (error) {
-      this.logger.error('Error creating offer', error as Error);
-      throw error;
-    }
+    const savedOffer = await this.offerModel.create(dto);
+    console.log(savedOffer);
+    this.logger.info(`New offer created: ${savedOffer.title} by author`);
+    return savedOffer;
   }
 
   public async editOffer(offerId: string, dto: UpdateOfferDto): Promise<DocumentType<OfferEntity>> {
@@ -43,13 +48,14 @@ export class DefaultOfferService implements OfferService {
     }
   }
 
-  public async deleteOffer(offerId: string): Promise<void> {
+  public async deleteOffer(offerId: string): Promise<DocumentType<OfferEntity> | null> {
     try {
-      const result = await this.offerModel.findByIdAndDelete(offerId);
+      const result = await this.offerModel.findByIdAndDelete(offerId).exec();
       if (!result) {
         throw new Error(`Offer with ID ${offerId} not found`);
       }
       this.logger.info(`Offer ${offerId} deleted `);
+      return result; // Add this line to return the deleted offer
     } catch (error) {
       this.logger.error('Error deleting offer:', error as Error);
       throw error;
@@ -66,52 +72,58 @@ export class DefaultOfferService implements OfferService {
     if (!offer) {
       throw new Error('Offer not found');
     }
-
-    // считаем новый средний рейтинг и количество комментариев
-    const totalRating = offer.rating * offer.commentsCount + newRating;
-    const newCommentsCount = offer.commentsCount + 1;
+    // Calculate the new average rating and comment count
+    const currentRating = offer.rating ?? 0;
+    const currentCommentsCount = offer.commentsCount ?? 0;
+    const totalRating = currentRating * currentCommentsCount + newRating;
+    const newCommentsCount = currentCommentsCount + 1;
     const newAverageRating = totalRating / newCommentsCount;
-
-    // обновляем оффер с новым средним рейтингом и кол-вом комментариев
-    return this.offerModel.findByIdAndUpdate(offerId, {
-      $set: { rating: newAverageRating },
-      $inc: { commentsCount: 1 }
-    }, { new: true }).exec();
+    // Update the offer with the new average rating and comment count
+    const updatedOffer = await this.offerModel.findByIdAndUpdate(
+      offerId,
+      {
+        $set: { rating: newAverageRating.toFixed(1) }, //  with one decimal place
+        $inc: { commentsCount: 1 }
+      },
+      { new: true }
+    ).exec();
+    return updatedOffer;
   }
 
   public async getOfferById(offerId: string, userId?: string): Promise<DocumentType<OfferEntity> | null> {
     const offerObjectId = new mongoose.Types.ObjectId(offerId);
-    let pipeline: PipelineStage[] = [{ $match: { _id: offerObjectId } }];
-
-    if (userId) {
-      pipeline = [...pipeline, ...this.addFavoriteFlagPipeline(userId)];
-    }
+    const pipeline: PipelineStage[] = [
+      { $match: { _id: offerObjectId } },
+      ...ID_TO_STRING_PIPELINE,
+      ...this.addFavoriteFlagPipeline(userId)];
 
     const results = await this.offerModel.aggregate(pipeline).exec();
-
+    console.log('из шоу', results);
     if (results.length > 0) {
       this.logger.info(`Offer with ID ${offerId} found`);
       const offer = results[0]; // первый (и единственный) результат запроса
-      return this.offerModel.populate(offer, { path: 'authorId' }); // Pass the second argument as an object with 'path' property
+      return this.offerModel.populate(offer, { path: 'authorId' }); // second argument as object with 'path' and 'model' properties
     } else {
       this.logger.warn(`Offer with ID ${offerId} not found`);
       return null; // null, если оффер не найден
     }
   }
 
-  public async getAllOffers(userId?: string, limit: number = DEFAULT_OFFER_COUNT): Promise<DocumentType<OfferEntity>[]> {
+  public async getAllOffers(userId?: string, city?: string, count?: number): Promise<DocumentType<OfferEntity>[]> {
+    const limit = count ?? DEFAULT_OFFER_COUNT;
     try {
-      let pipeline: PipelineStage[] = [{ $sort: { createdAt: SortType.Down } }, { $limit: limit }];
-
-      // для авторизованных пользователей
-      if (userId) {
-        pipeline = [...pipeline, ...this.addFavoriteFlagPipeline(userId)];
-      }
+      const matchStage = city ? { city } : {};
+      const pipeline: PipelineStage[] = [
+        { $match: matchStage },
+        { $sort: { createdAt: SortType.Down } },
+        { $limit: limit },
+        ...ID_TO_STRING_PIPELINE,
+        ...this.addFavoriteFlagPipeline(userId) // всегда добавляем результат addFavoriteFlagPipeline в конвейер
+      ];
 
       const offers = await this.offerModel.aggregate(pipeline).exec();
       this.logger.info('All offers fetched');
 
-      // Populate the authorId field
       return this.offerModel.populate(offers, { path: 'authorId' });
     } catch (error) {
       this.logger.error('Error fetching all offers:', error as Error);
@@ -119,15 +131,18 @@ export class DefaultOfferService implements OfferService {
     }
   }
 
-  public async getFavoriteOffersByUser(userId: string): Promise<DocumentType<OfferEntity>[]> {
+  public async getFavoriteOffersByUser(userId: string, city?: string, count?: number): Promise<DocumentType<OfferEntity>[]> {
+    const limit = count ?? DEFAULT_OFFER_COUNT;
     try {
+      const matchStage = city ? { isFavorite: true, city } : { isFavorite: true };
       const offers = await this.offerModel.aggregate([
         { $sort: { createdAt: SortType.Down } },
+        { $limit: limit },
+        ...ID_TO_STRING_PIPELINE,
         ...this.addFavoriteFlagPipeline(userId),
-        { $match: { isFavorite: true } }
+        { $match: matchStage }
       ]).exec();
 
-      // Populate the authorId field
       return this.offerModel.populate(offers, { path: 'authorId' });
     } catch (error) {
       this.logger.error('Error fetching favorite offers by user:', error as Error);
@@ -135,22 +150,21 @@ export class DefaultOfferService implements OfferService {
     }
   }
 
-  public async getPremiumOffersByCity(city: string, userID?: string, limit: number = DEFAULT_OFFER_COUNT): Promise<DocumentType<OfferEntity>[]> {
+  public async getPremiumOffers(city?: string, userID?: string, count?: number): Promise<DocumentType<OfferEntity>[]> {
+    const limit = count ?? PREMIUM_OFFER_COUNT;
     try {
-      let pipeline: PipelineStage[] = [
-        { $match: { city, isPremium: true } },
+      const matchStage = city ? { isPremium: true, city } : { isPremium: true };
+
+      const pipeline: PipelineStage[] = [
+        { $match: matchStage },
         { $sort: { createdAt: SortType.Down } },
         { $limit: limit },
+        ...ID_TO_STRING_PIPELINE,
+        ...this.addFavoriteFlagPipeline(userID)
       ];
 
-      if (userID) {
-        pipeline = [...pipeline, ...this.addFavoriteFlagPipeline(userID)];
-      }
-
       const offers = await this.offerModel.aggregate(pipeline).exec();
-      this.logger.info(`Premium offers fetched for city ${city}`);
-
-      // Populate the authorId field
+      this.logger.info(`Premium offers fetched ${city ? `for city ${ city}` : ''}`);
       return this.offerModel.populate(offers, { path: 'authorId' });
     } catch (error) {
       this.logger.error('Error fetching premium offers by city:', error as Error);
@@ -158,28 +172,47 @@ export class DefaultOfferService implements OfferService {
     }
   }
 
-  private addFavoriteFlagPipeline(userId: string): PipelineStage[] {
-    const userIdObj = new mongoose.Types.ObjectId(userId);
+  private addFavoriteFlagPipeline(userId?: string): PipelineStage[] {
+    if (!userId) {
+      return [
+        {
+          $addFields: {
+            isFavorite: false // Устанавливаем isFavorite как false для всех предложений
+          }
+        }
+      ];
+    }
 
     return [
       {
         $lookup: {
           from: 'users',
-          let: { offerId: '$_id' },
+          let: { offerId: '$id' },
           pipeline: [
-            { $match: { _id: userIdObj } },
-            { $unwind: '$favoriteOffers' },
-            { $match: { $expr: { $eq: ['$$offerId', '$favoriteOffers'] } } },
+            { $match: { _id: new mongoose.Types.ObjectId(userId) } },
+            {
+              $project: {
+                favorites: {
+                  $in: ['$$offerId', { $map: { input: '$favoriteOffers', as: 'fav', in: { $toString: '$$fav' } } }] // Преобразуем каждый элемент favoriteOffers в строку и проверяем наличие offerId
+                }
+              }
+            }
           ],
-          as: 'isFavoriteArray'
+          as: 'favoritesCheck'
         }
       },
       {
         $addFields: {
-          isFavorite: { $gt: [{ $size: '$isFavoriteArray' }, 0] }
+          isFavorite: {
+            $arrayElemAt: ['$favoritesCheck.favorites', 0] // Используем результат проверки для установки isFavorite
+          }
         }
       },
-      { $unset: 'isFavoriteArray' },
+      {
+        $project: {
+          favoritesCheck: 0 // Удаляем временный favoritesCheck
+        }
+      }
     ];
   }
 }

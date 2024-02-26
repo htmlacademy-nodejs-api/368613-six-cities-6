@@ -6,3 +6,6 @@ export * from './dto/update-offer.dto.js';
 export * from './offer-service.interface.js';
 export * from './offer.constant.js';
 export * from './rdo/offer.rdo.js';
+export * from './rdo/offers-list.rdo.js';
+export * from './offer.controller.js';
+export * from './type/param-offerid.type.js';

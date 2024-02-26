@@ -10,4 +10,5 @@ export interface UserService {
   findOrCreate(dto: CreateUserDto, salt: string): Promise<DocumentType<UserEntity>>;
   addToFavorites(dto: FavoritesDto): Promise<DocumentType<UserEntity>>;
   removeFromFavorites(dto: FavoritesDto): Promise<DocumentType<UserEntity>>;
+  removeFavoriteFromAllUsers(offerId: string): Promise<void>;
 }
