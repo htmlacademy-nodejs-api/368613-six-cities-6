@@ -5,3 +5,5 @@ DB_PASSWORD=test
 DB_PORT=27017
 DB_NAME=six-cities
 DB_HOST=127.0.0.1
+UPLOAD_DIR=uploads
+```

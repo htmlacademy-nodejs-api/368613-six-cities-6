@@ -1,7 +1,7 @@
 import { inject, injectable } from 'inversify';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { BaseController, HttpError, HttpMethod, ValidateDtoMiddleware, DocumentExistsMiddleware } from '../../libs/rest/index.js';
+import { BaseController, HttpError, HttpMethod, ValidateDtoMiddleware, DocumentExistsMiddleware, UploadFileMiddleware, ValidateObjectIdMiddleware } from '../../libs/rest/index.js';
 import { Logger } from '../../libs/logger/index.js';
 import { Component } from '../../types/index.js';
 import { CreateUserRequest } from './type/create-user-request.type.js';
@@ -52,6 +52,15 @@ export class UserController extends BaseController {
       method: HttpMethod.Delete,
       handler: this.removeFromFavorites,
       middlewares: [new DocumentExistsMiddleware(this.offerService, 'Offer', 'offerId', true)]
+    });
+    this.addRoute({
+      path: '/:userId/avatar',
+      method: HttpMethod.Post,
+      handler: this.uploadAvatar,
+      middlewares: [
+        new ValidateObjectIdMiddleware('userId'),
+        new UploadFileMiddleware(this.configService.get('UPLOAD_DIR'), 'avatar'),
+      ]
     });
   }
 
@@ -108,6 +117,12 @@ export class UserController extends BaseController {
   ): Promise<void> {
     const user = await this.userService.removeFromFavorites(body);
     this.ok(res, fillDTO(FavoritesRdo, user));
+  }
+
+  public async uploadAvatar(req: Request, res: Response) {
+    this.created(res, {
+      filepath: req.file?.path
+    });
   }
 }
 
