@@ -4,10 +4,12 @@
 /lib/
 /dist/
 /docs/
+/uploads/
 .idea/*
 
 .DS_Store
 coverage
 *.log
-*.tsv
 .env
+
+/mocks/*.tsv
