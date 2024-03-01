@@ -1,4 +1,5 @@
-import { BaseController, HttpMethod, ValidateObjectIdMiddleware, ValidateDtoMiddleware, DocumentExistsMiddleware } from '../../libs/rest/index.js';
+import { BaseController, HttpMethod, ValidateObjectIdMiddleware, ValidateDtoMiddleware, DocumentExistsMiddleware, PrivateRouteMiddleware, HttpError } from '../../libs/rest/index.js';
+import { StatusCodes } from 'http-status-codes';
 import { inject, injectable } from 'inversify';
 import { Component } from '../../types/index.js';
 import { Logger } from '../../libs/logger/index.js';
@@ -10,6 +11,7 @@ import { RequestQuery } from '../../libs/rest/types/request-query.type.js';
 import { CommentService } from '../comment/comment-service.interface.js';
 import { CommentRdo } from '../comment/index.js';
 import { UserService } from '../user/user-service.interface.js';
+import { Cities } from '../../types/const.js';
 
 @injectable()
 export default class OfferController extends BaseController {
@@ -26,7 +28,8 @@ export default class OfferController extends BaseController {
     this.addRoute({
       path: '/favorites',
       method: HttpMethod.Get,
-      handler: this.getFavoriteOffersByUser
+      handler: this.getFavoriteOffersByUser,
+      middlewares: [new PrivateRouteMiddleware()]
     });
     this.addRoute({
       path: '/premium',
@@ -47,6 +50,7 @@ export default class OfferController extends BaseController {
       method: HttpMethod.Patch,
       handler: this.edit,
       middlewares: [
+        new PrivateRouteMiddleware(),
         new ValidateObjectIdMiddleware('offerId'),
         new ValidateDtoMiddleware(UpdateOfferDto),
         new DocumentExistsMiddleware(this.offerService, 'Offer', 'offerId')
@@ -57,6 +61,7 @@ export default class OfferController extends BaseController {
       method: HttpMethod.Delete,
       handler: this.delete,
       middlewares: [
+        new PrivateRouteMiddleware(),
         new ValidateObjectIdMiddleware('offerId'),
         new DocumentExistsMiddleware(this.offerService, 'Offer', 'offerId')
       ]
@@ -74,7 +79,7 @@ export default class OfferController extends BaseController {
       path: '/',
       method: HttpMethod.Post,
       handler: this.create,
-      middlewares: [new ValidateDtoMiddleware(CreateOfferDto)]
+      middlewares: [ new PrivateRouteMiddleware(), new ValidateDtoMiddleware(CreateOfferDto)]
     });
     this.addRoute({
       path: '/', method: HttpMethod.Get,
@@ -90,20 +95,26 @@ export default class OfferController extends BaseController {
     this.ok(res, fillDTO(OfferRdo, offer));
   }
 
-  public async index({ query }: Request<unknown, unknown, unknown, RequestQuery>, res: Response): Promise<void> {
-    const offers = await this.offerService.getAllOffers(query.userId,query.city, query.limit);
+  public async index({ query, tokenPayload }: Request<unknown, unknown, unknown, RequestQuery>, res: Response): Promise<void> {
+    if (query.city && !(query.city in Cities)) {
+      throw new HttpError(StatusCodes.BAD_REQUEST, 'Invalid city provided');
+    }
+    const offers = await this.offerService.getAllOffers(tokenPayload?.id, query.city, query.limit);
 
     this.ok(res, offers.map((offer) => fillDTO(OffersListRdo, offer)));
   }
 
-  public async getFavoriteOffersByUser({ query }: Request<unknown, unknown, unknown, RequestQuery>, res: Response): Promise<void> {
-    const offers = await this.offerService.getFavoriteOffersByUser(query.userId, query.city, query.limit);
+  public async getFavoriteOffersByUser({ query, tokenPayload }: Request<unknown, unknown, unknown, RequestQuery>, res: Response): Promise<void> {
+    if (query.city && !(query.city in Cities)) {
+      throw new HttpError(StatusCodes.BAD_REQUEST, 'Invalid city provided');
+    }
+    const offers = await this.offerService.getFavoriteOffersByUser(tokenPayload.id, query.city, query.limit);
 
     this.ok(res, offers.map((offer) => fillDTO(OffersListRdo, offer)));
   }
 
-  public async create({ body }: Request<ParamOfferId, CreateOfferDto>, res: Response): Promise<void> {
-    const result = await this.offerService.createOffer(body);
+  public async create({ body, tokenPayload }: Request<ParamOfferId, CreateOfferDto>, res: Response): Promise<void> {
+    const result = await this.offerService.createOffer({ ...body, userId: tokenPayload.id });
     const offer = await this.offerService.getOfferById(result.id);
     this.created(res, fillDTO(OfferRdo, offer));
   }
@@ -124,8 +135,11 @@ export default class OfferController extends BaseController {
     this.ok(res, fillDTO(OfferRdo, updatedOffer));
   }
 
-  public async getPremiumOffersByCity({ query }: Request<unknown, unknown, unknown, RequestQuery>, res: Response): Promise<void> {
-    const offers = await this.offerService.getPremiumOffers(query.city, query.userId, query.limit);
+  public async getPremiumOffersByCity({ query, tokenPayload }: Request<unknown, unknown, unknown, RequestQuery>, res: Response): Promise<void> {
+    if (query.city && !(query.city in Cities)) {
+      throw new HttpError(StatusCodes.BAD_REQUEST, 'Invalid city provided');
+    }
+    const offers = await this.offerService.getPremiumOffers(query.city, tokenPayload?.id, query.limit);
 
     this.ok(res, offers.map((offer) => fillDTO(OffersListRdo, offer)));
   }

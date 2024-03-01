@@ -4,7 +4,7 @@ GET http://localhost:4000/offers/65db2cef85adff3ddda3c85f HTTP/1.1
 ###
 
 #Получить все объявления
-GET http://localhost:4000/offers?userId=65d7e009e600008320ee37b5 HTTP/1.1
+GET http://localhost:4000/offers?city=Amsterdam HTTP/1.1
 
 ###
 
@@ -56,12 +56,14 @@ Content-Type: application/json
 ###
 
 #Премиум по городу
-GET http://localhost:4000/offers/premium?city=Amsterda HTTP/1.1
+GET http://localhost:4000/offers/premium?city=Paris HTTP/1.1
+
 
 ###
 
 #Избранные объявления
-GET http://localhost:4000/offers/favorites?userId=65d7e009e600008320ee37b5&city=Paris HTTP/1.1
+GET http://localhost:4000/offers/favorites HTTP/1.1
+
 
 ###
 

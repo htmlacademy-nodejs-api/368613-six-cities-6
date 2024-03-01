@@ -1,5 +1,5 @@
 import { IsString, IsEnum, IsBoolean, Min, Max, ArrayMinSize, ArrayMaxSize,
-  ArrayNotEmpty, IsLatitude, IsLongitude, ValidateNested, IsInt, IsMongoId, Length, MaxLength } from 'class-validator';
+  ArrayNotEmpty, IsLatitude, IsLongitude, ValidateNested, IsInt, Length, MaxLength } from 'class-validator';
 import { Cities, OfferType, Amenities, EnumValues } from '../../../types/index.js';
 import { Type } from 'class-transformer';
 import { validationMessages } from './create-offer.validation-messages.js';
@@ -57,8 +57,7 @@ export class CreateOfferDto {
   @IsEnum(Amenities, { each: true , message: validationMessages.amenities.isEnum })
     amenities: EnumValues<typeof Amenities>[];
 
-  @IsMongoId({ message: validationMessages.authorId.isMongoId })
-    authorId: string;
+  authorId: string;
 
   @ValidateNested()
   @Type(() => CoordinatesDto)
