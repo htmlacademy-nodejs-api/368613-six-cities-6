@@ -14,17 +14,16 @@ tags:
   - name: offers
     description: |-
       * Offer related endpoints.
-  - name: reviews
+  - name: comments
     description: |-
       * Review related endpoints.
+
 paths:
   /users/register:
     post:
       tags:
         - users
-      summary: Register a new user.
-      description: |-
-        * Register a new user.
+      summary: Register a new user
       operationId: registerUser
       requestBody:
         required: true
@@ -33,27 +32,43 @@ paths:
             schema:
               $ref: '#/components/schemas/createUser'
       responses:
-        '200':
-          description: |-
-            * User successfully registered.
+        '201':
+          description: User successfully registered
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/user'
         '400':
-          description: |-
-            * Bad request.
+          description: Bad request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
   /users/login:
+    get:
+      tags:
+        - users
+      summary: Check if user is logged in
+      description: Requires authentication. The `userId` is derived from the JWT token provided in the `Authorization` header.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User is logged in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/loggedUser'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     post:
       tags:
         - users
-      summary: Login a user.
-      description: |-
-        * Login a user.
+      summary: Login a user
       operationId: loginUser
       requestBody:
         required: true
@@ -63,289 +78,62 @@ paths:
               $ref: '#/components/schemas/loginUser'
       responses:
         '200':
-          description: |-
-            * User successfully logged in.
+          description: User successfully logged in
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/user'
         '400':
-          description: |-
-            * Bad request.
+          description: Bad request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-    get:
+  /users/favorite:
+    patch:
       tags:
         - users
-      summary: Logout a user.
-      description: |-
-        * Logout a user.
-      operationId: logoutUser
-      responses:
-        '200':
-          description: |-
-            * User successfully logged out.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/user'
-        '400':
-          description: |-
-            * Bad request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /offers:
-    get:
-      tags:
-        - offers
-      summary: Get offers list.
-      description: |-
-        * Get offers list.
-      operationId: getOffers
-      responses:
-        '200':
-          description: |-
-            * Offers list successfully retrieved.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/offer'
-        '400':
-          description: |-
-            * Bad request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    post:
-      tags:
-        - offers
-      summary: Create a new offer.
-      description: |-
-        * Create a new offer.
-      operationId: createOffer
+      summary: Add an offer to favorites
+      description: Requires authentication. The `userId` is derived from the JWT token provided in the `Authorization` header.
+      security:
+        - BearerAuth: []
+      operationId: addToFavorites
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/offer'
+              $ref: '#/components/schemas/FavoritesDto'
       responses:
         '200':
-          description: |-
-            * Offer successfully created.
+          description: Offer added to favorites
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/offer'
+                $ref: '#/components/schemas/FavoritesRdo'
         '400':
-          description: |-
-            * Bad request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /offers/{offerID}:
-    get:
-      tags:
-        - offers
-      summary: Get offer by ID.
-      description: |-
-        * Get offer by ID.
-      operationId: getOffer
-      parameters:
-        - name: offerID
-          in: path
-          required: true
-          description: |-
-            * Offer ID.
-          schema:
-            type: string
-      responses:
-        '200':
-          description: |-
-            * Offer successfully retrieved.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/offer'
-        '400':
-          description: |-
-            * Bad request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    put:
-      tags:
-        - offers
-      summary: Update offer by ID.
-      description: |-
-        * Update offer by ID.
-      operationId: updateOffer
-      parameters:
-        - name: offerID
-          in: path
-          required: true
-          description: |-
-            * Offer ID.
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/offer'
-      responses:
-        '200':
-          description: |-
-            * Offer successfully updated.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/offer'
-        '400':
-          description: |-
-            * Bad request.
+          description: Bad request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
     delete:
       tags:
-        - offers
-      summary: Delete offer by ID.
-      description: |-
-        * Delete offer by ID.
-      operationId: deleteOffer
-      parameters:
-        - name: offerID
-          in: path
-          required: true
-          description: |-
-            * Offer ID.
-          schema:
-            type: string
+        - users
+      summary: Remove an offer from favorites
+      description: Requires authentication. The `userId` is derived from the JWT token provided in the `Authorization` header.
+      security:
+        - BearerAuth: []
+      operationId: removeFromFavorites
       responses:
         '200':
-          description: |-
-            * Offer successfully deleted.
+          description: Offer removed from favorites
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/offer'
+                $ref: '#/components/schemas/FavoritesRdo'
         '400':
-          description: |-
-            * Bad request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /offers/{offerID}/reviews:
-    get:
-      tags:
-        - reviews
-      summary: Get reviews list by offer ID.
-      description: |-
-        * Get reviews list by offer ID.
-      operationId: getReviews
-      parameters:
-        - name: offerID
-          in: path
-          required: true
-          description: |-
-            * Offer ID.
-          schema:
-            type: string
-      responses:
-        '200':
-          description: |-
-            * Reviews list successfully retrieved.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/review'
-        '400':
-          description: |-
-            * Bad request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    post:
-      tags:
-        - reviews
-      summary: Create a new review for the offer.
-      description: |-
-        * Create a new review for the offer.
-      operationId: createReview
-      parameters:
-        - name: offerID
-          in: path
-          required: true
-          description: |-
-            * Offer ID.
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/createReview'
-      responses:
-        '200':
-          description: |-
-            * Review successfully created.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/review'
-        '400':
-          description: |-
-            * Bad request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /offers/premium/{city}:
-    get:
-      tags:
-        - offers
-      summary: Get premium offers list by city.
-      description: |-
-        * Get premium offers list by city.
-      operationId: getPremiumOffers
-      parameters:
-        - name: city
-          in: path
-          required: true
-          description: |-
-            * City name.
-          schema:
-            type: string
-      responses:
-        '200':
-          description: |-
-            * Premium offers list successfully retrieved.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/offer'
-        '400':
-          description: |-
-            * Bad request.
+          description: Bad request
           content:
             application/json:
               schema:
@@ -354,205 +142,483 @@ paths:
     get:
       tags:
         - offers
-      summary: Get favorite offers.
-      description: Get favorite offers.
-      operationId: getFavoriteOffers
+      summary: Get favorite offers by user
+      description: Requires authentication. The `userId` is derived from the JWT token provided in the `Authorization` header.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: city
+          in: query
+          description: Filter favorite offers by city
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Limit the number of favorite offers returned
+          required: false
+          schema:
+            type: integer
       responses:
         '200':
-          description: Favorite offers successfully retrieved.
+          description: List of favorite offers
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/offer'
-        '400':
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    post:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OfferListRdo'
+  /offers/premium:
+    get:
       tags:
         - offers
-      summary: Add an offer to favorites.
-      description: Add an offer to favorites.
-      operationId: addFavoriteOffer
+      summary: Get premium offers by city
+      parameters:
+        - name: city
+          in: query
+          description: Filter favorite offers by city
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Limit the number of favorite offers returned
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of premium offers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OfferListRdo'
+                  
+  /offers/{offerId}/comments:
+    get:
+      tags:
+        - offers
+      summary: Get comments for an offer
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Limit the number of favorite offers returned
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of comments for the offer
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommentRdo'
+  /offers/{offerId}:
+    get:
+      tags:
+        - offers
+      summary: Get an offer by ID
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Offer details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferRdo'
+    patch:
+      tags:
+        - offers
+      summary: Update an offer by ID
+      description: Requires authentication. The `userId` is derived from the JWT token provided in the `Authorization` header.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/offer'
+              $ref: '#/components/schemas/UpdateOfferDto'
       responses:
         '200':
-          description: Offer successfully added to favorites.
+          description: Updated offer details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/offer'
-        '400':
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/OfferRdo'
     delete:
       tags:
         - offers
-      summary: Remove an offer from favorites.
-      description: Remove an offer from favorites.
-      operationId: removeFavoriteOffer
+      summary: Delete an offer by ID
+      description: Requires authentication. The `userId` is derived from the JWT token provided in the `Authorization` header.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Offer deleted
+  /offers/:
+    post:
+      tags:
+        - offers
+      summary: Create a new offer
+      description: Requires authentication. The `userId` is derived from the JWT token provided in the `Authorization` header.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOfferDto'
+      responses:
+        '201':
+          description: Offer created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferRdo'
+    get:
+      tags:
+        - offers
+      summary: Get all offers
+      parameters:
+        - name: city
+          in: query
+          description: Filter favorite offers by city
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Limit the number of favorite offers returned
+          required: false
+          schema:
+            type: integer
       responses:
         '200':
-          description: Offer successfully removed from favorites.
+          description: List of all offers
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/offer'
-        '400':
-          description: Bad request.
+                type: array
+                items:
+                  $ref: '#/components/schemas/OfferListRdo'
+  /comments/:
+    post:
+      tags:
+        - comments
+      summary: Create a new comment
+      description: Requires authentication. The `userId` is derived from the JWT token provided in the `Authorization` header.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentDto'
+      responses:
+        '201':
+          description: Comment created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/CommentRdo'
+
+
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
+    # Схема для регистрации пользователя
+    createUser:
+      type: object
+      required: [name, email, password, userType]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 15
+        email:
+          type: string
+          format: email
+        avatarPath:
+          type: string
+          nullable: true
+        password:
+          type: string
+          minLength: 6
+          maxLength: 12
+        userType:
+          type: string
+          enum: ["pro", "regular"]
+
+    # Схема для входа пользователя
+    loginUser:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    # Общая схема пользователя для ответов
+    user:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        avatarPath:
+          type: string
+          nullable: true
+        userType:
+          type: string
+          enum: ["pro", "regular"]
+    
+    loggedUser:
+      type: object
+      properties:
+        email:
+          type: string
+
+    # Схема для ошибок
     Error:
       type: object
       properties:
         message:
           type: string
-          description: |-
-            * Error message.
-    createUser:
+        code:
+          type: integer
+          format: int32
+    
+    # Схема для операций с избранными
+    FavoritesDto:
       type: object
+      required:
+        - offerId
       properties:
-        email:
+        offerId:
           type: string
-          example: example@ex.ex
-        password:
-          type: string
-          example: password
-        name:
-          type: string
-          example: Example
-        avatar:
-          type: string
-          example: https://example.com/avatar.jpg
-    loginUser:
-      type: object
-      properties:
-        email:
-          type: string
-          example: example@ex.ex
-        password:
-          type: string
-          example: password
-    user:
+          format: mongoId
+          
+    # Схема ответа для операций с избранными
+    FavoritesRdo:
       type: object
       properties:
         id:
           type: string
-          example: 6329c3d6a04ab1061c6425ea
-        email:
-          type: string
-          example: example@ex.ex
         name:
           type: string
-          example: Example
-        avatar:
-          type: string
-          example: https://example.com/avatar.jpg
-    offer:
+        favoriteOffers:
+          type: array
+          items:
+            type: string
+    
+    # Схема для создания предложения
+    CreateOfferDto:
       type: object
       properties:
-        id:
-          type: string
-          example: 6329c3d6a04ab1061c6425ea
         title:
           type: string
-          example: Example
         description:
           type: string
-          example: Example
-        price:
-          type: number
-          example: 100
-        type:
-          type: string
-          example: apartment
-        rating:
-          type: number
-          example: 4.5
         city:
           type: string
-          example: Paris
-        location:
+        previewImage:
+          type: string
+        photos:
+          type: array
+          items:
+            type: string
+        isPremium:
+          type: boolean
+        type:
+          type: string
+        rooms:
+          type: integer
+        guests:
+          type: integer
+        cost:
+          type: integer
+        amenities:
+          type: array
+          items:
+            type: string
+        coordinates:
           type: object
           properties:
             latitude:
               type: number
-              example: 48.85661
+              format: double
             longitude:
               type: number
-              example: 2.35222
-        host:
-          type: object
+              format: double
+      required: [title, description, city, previewImage, isPremium, type, rooms, guests, cost, amenities, coordinates]
+
+    # Схема для обновления предложения
+    UpdateOfferDto:
+      allOf:
+        - $ref: '#/components/schemas/CreateOfferDto'
+        - type: object
           properties:
-            id:
+            title:
               type: string
-              example: 6329c3d6a04ab1061c6425ea
-            name:
-              type: string
-              example: Example
-            avatar:
-              type: string
-              example: https://example.com/avatar.jpg
-        images:
-          type: array
-          items:
-            type: string
-          example:
-            - https://example.com/image1.jpg
-            - https://example.com/image2.jpg
-        isPremium:
-          type: boolean
-          example: true
-        isFavorite:
-          type: boolean
-          example: true
-    review:
+
+    # Схема для ответа предложения
+    OfferRdo:
       type: object
       properties:
         id:
           type: string
-          example: 6329c3d6a04ab1061c6425ea
-        user:
+        title:
+          type: string
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        city:
+          type: string
+        previewImage:
+          type: string
+        photos:
+          type: array
+          items:
+            type: string
+        isPremium:
+          type: boolean
+        isFavorite:
+          type: boolean
+        rating:
+          type: number
+          format: float
+        type:
+          type: string
+        rooms:
+          type: integer
+        guests:
+          type: integer
+        cost:
+          type: integer
+        amenities:
+          type: array
+          items:
+            type: string
+        author:
+          $ref: '#/components/schemas/user'
+        commentsCount:
+          type: integer
+        coordinates:
           type: object
           properties:
-            id:
-              type: string
-              example: 6329c3d6a04ab1061c6425ea
-            name:
-              type: string
-              example: Example
-            avatar:
-              type: string
-              example: https://example.com/avatar.jpg
-        rating:
-          type: number
-          example: 4.5
-        comment:
-          type: string
-          example: Example
-        date:
-          type: string
-          example: 2020-12-31T23:59:59.999Z
-    createReview:
+            latitude:
+              type: number
+              format: double
+            longitude:
+              type: number
+              format: double
+      required: [id, title, description, createdAt, city, previewImage, photos, isPremium, isFavorite, rating, type, rooms, guests, cost, amenities, author, commentsCount, coordinates]
+
+    # Схема для списка предложений
+    OfferListRdo:
       type: object
       properties:
+        id:
+          type: string
+          description: Unique identifier of the offer
+        title:
+          type: string
+          description: Title of the offer
+        cost:
+          type: integer
+          description: Cost of the offer
+        type:
+          type: string
+          description: Type of the offer
+        isFavorite:
+          type: boolean
+          description: Indicates if the offer is marked as favorite
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation date of the offer
+        city:
+          type: string
+          description: City where the offer is located
+        previewImage:
+          type: string
+          description: URL to the preview image of the offer
+        isPremium:
+          type: boolean
+          description: Indicates if the offer is a premium offer
         rating:
           type: number
-          example: 4.5
-        comment:
+          format: float
+          description: Rating of the offer
+        commentsCount:
+          type: integer
+          description: Number of comments on the offer
+        author:
+          $ref: '#/components/schemas/user'
+      required: [id, title, cost, type, isFavorite, createdAt, city, previewImage, isPremium, rating, commentsCount]
+
+    CommentRdo:
+      type: object
+      properties:
+        id:
           type: string
-          example: Example
+        text:
+          type: string
+        rating:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+        author:
+          $ref: '#/components/schemas/user'
+
+    CommentDto:
+      type: object
+      properties:
+        text:
+          type: string
+        rating:
+          type: number
+        offerId:
+          type: string
+      required: [text, rating, offerId]
