@@ -34,6 +34,9 @@ export class DefaultOfferService implements OfferService {
   }
 
   public async editOffer(offerId: string, dto: UpdateOfferDto): Promise<DocumentType<OfferEntity>> {
+    // if ('rating' in dto || 'commentsCount' in dto || 'isFavorite' in dto || '_id' in dto || 'authorId' in dto || 'createdAt' in dto || 'updatedAt' in dto) {
+    //   throw new Error('cannot be updated directly');
+    // }
     try {
       const updatedOffer = await this.offerModel
         .findByIdAndUpdate(offerId, dto, { new: true }).populate('authorId').exec();
