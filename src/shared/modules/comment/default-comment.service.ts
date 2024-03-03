@@ -21,7 +21,7 @@ export class DefaultCommentService implements CommentService {
     const limit = count || DEFAULT_COMMENT_COUNT;
     return this.commentModel
       .find({ offerId })
-      .sort({ createdAt: -1 }) // Sort by descending order of createdAt
+      .sort({ createdAt: -1 })
       .limit(limit)
       .populate('authorId');
   }

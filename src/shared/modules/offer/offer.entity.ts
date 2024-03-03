@@ -1,5 +1,5 @@
 import { prop, getModelForClass, modelOptions, Ref, defaultClasses } from '@typegoose/typegoose';
-import { UserEntity } from '../user/index.js'; // Предполагаем, что UserEntity уже определен
+import { UserEntity } from '../user/index.js';
 import { Cities, OfferType, Amenities, EnumValues } from '../../types/index.js';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging

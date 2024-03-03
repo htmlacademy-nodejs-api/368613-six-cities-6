@@ -1,5 +1,5 @@
 import { UserType, EnumValues } from '../../../types/index.js';
-import { IsEmail, IsString, Length, IsEnum, IsOptional } from 'class-validator';
+import { IsEmail, IsString, Length, IsEnum } from 'class-validator';
 import { userValidationMessages } from './create-user.validation-messages.js';
 
 export class CreateUserDto {
@@ -9,10 +9,6 @@ export class CreateUserDto {
 
   @IsEmail({}, { message: userValidationMessages.email.isEmail })
     email: string;
-
-  @IsOptional()
-  @IsString({ message: userValidationMessages.avatarPath.isString })
-    avatarPath?: string;
 
   @IsString({ message: userValidationMessages.password.isString })
   @Length(6, 12, { message: userValidationMessages.password.length })

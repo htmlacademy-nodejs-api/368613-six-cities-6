@@ -1,4 +1,3 @@
-// validation-messages.ts
 export const validationMessages = {
   title: {
     isString: 'Title must be a string',

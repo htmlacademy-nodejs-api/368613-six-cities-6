@@ -25,7 +25,7 @@ export function createOffer(offerData: string): Offer {
   const userType = userTypeString as keyof typeof UserType;
   const amenitiesValues = amenities.split(',').map((amenityKey) => {
     const key = amenityKey.trim() as keyof typeof Amenities;
-    return Amenities[key]; // Получаем значение из Amenities по ключу во время выполнения
+    return Amenities[key];
   });
 
   return {

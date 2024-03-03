@@ -10,6 +10,8 @@ import { DefaultOfferService } from '../offer/index.js';
 import { FavoritesDto } from './dto/favorite.dto.js';
 import { HttpError } from '../../libs/rest/index.js';
 import { StatusCodes } from 'http-status-codes';
+import { DEFAULT_AVATAR_FILE_NAME } from './user.constant.js';
+import { UpdateUserDto } from './dto/update-user.dto.js';
 
 
 @injectable()
@@ -22,8 +24,7 @@ export class DefaultUserService implements UserService {
 
   public async create(dto: CreateUserDto, salt: string): Promise<DocumentType<UserEntity>> {
     try {
-      console.log(dto);
-      const user = new UserEntity(dto);
+      const user = new UserEntity({ ...dto, avatarPath: DEFAULT_AVATAR_FILE_NAME });
       user.setPassword(dto.password, salt);
       console.log(`Creating user with userType: ${dto.userType}`);
 
@@ -74,9 +75,8 @@ export class DefaultUserService implements UserService {
       );
     }
 
-    // Проверяем, есть ли уже такой offerId в массиве favoriteOffers
     if (!user.favoriteOffers.includes(offerId)) {
-      user.favoriteOffers.push(offerId); // Добавляем строку, а не ObjectId
+      user.favoriteOffers.push(offerId);
       await user.save();
     }
 
@@ -99,7 +99,6 @@ export class DefaultUserService implements UserService {
         'OfferController'
       );
     }
-    // Удаляем offerId из массива favoriteOffers
     user.favoriteOffers = user.favoriteOffers.filter((id) => id !== offerId);
     await user.save();
 
@@ -111,5 +110,11 @@ export class DefaultUserService implements UserService {
       { favoriteOffers: offerId },
       { $pull: { favoriteOffers: offerId } }
     );
+  }
+
+  public async updateById(userId: string, dto: UpdateUserDto): Promise<DocumentType<UserEntity> | null> {
+    return this.userModel
+      .findByIdAndUpdate(userId, dto, { new: true })
+      .exec();
   }
 }

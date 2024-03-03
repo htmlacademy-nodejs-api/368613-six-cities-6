@@ -25,8 +25,8 @@ export class GenerateCommand implements Command {
   }
 
   private async write(filepath: string, offerCount: number) {
-    this.fileWriter.initializeStream(filepath); // Инициализируем поток для записи
-    this.offerGenerator.setMockData(this.initialData); // Инициализируем offerGenerator данными
+    this.fileWriter.initializeStream(filepath);
+    this.offerGenerator.setMockData(this.initialData);
 
     for (let i = 0; i < offerCount; i++) {
       await this.fileWriter.write(this.offerGenerator.generate());

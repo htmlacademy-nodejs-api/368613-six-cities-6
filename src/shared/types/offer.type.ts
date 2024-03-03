@@ -2,17 +2,17 @@ import { User } from './user.type.js';
 import { Cities, OfferType, Amenities, EnumValues } from './const.js';
 
 export type Offer = {
-    title: string; // Мин. 10 символов, макс. 100 символов
-    description: string; // Мин. 20 символов, макс. 1024 символа
-    city: EnumValues<typeof Cities>; // Город
+    title: string;
+    description: string;
+    city: EnumValues<typeof Cities>;
     previewImage: string;
-    photos: string[]; // URL фотографий
+    photos: string[];
     isPremium: boolean;
-    type: EnumValues<typeof OfferType>; // Тип предложения
-    rooms: number; // Мин. 1, Макс. 8
-    guests: number; // Мин. 1, Макс. 10
-    cost: number; // Мин. 100, Макс. 100000
-    amenities: EnumValues<typeof Amenities>[]; // Список удобств
-    author: User; // Ссылка на сущность "Пользователь"
-    coordinates: { latitude: number; longitude: number; }; // Координаты
+    type: EnumValues<typeof OfferType>;
+    rooms: number;
+    guests: number;
+    cost: number;
+    amenities: EnumValues<typeof Amenities>[];
+    author: User;
+    coordinates: { latitude: number; longitude: number; };
 };

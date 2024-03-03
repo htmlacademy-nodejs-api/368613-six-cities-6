@@ -3,7 +3,7 @@ import { createReadStream } from 'node:fs';
 import { FileReader } from './file-reader.interface.js';
 import { injectable } from 'inversify';
 
-const CHUNK_SIZE = 16384; // 16KB
+const CHUNK_SIZE = 16384;
 
 
 class TSVFileReader extends EventEmitter implements FileReader {
