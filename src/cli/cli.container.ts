@@ -11,7 +11,6 @@ import { OfferGenerator, TSVOfferGenerator } from '../shared/libs/offer-generato
 
 export function createCliApplicationContainer() {
   const cliApplicationContainer = new Container();
-  // Регистрация зависимостей для CLI
   cliApplicationContainer.bind<CLIApplication>(Component.CliApplication).to(CLIApplication).inSingletonScope();
   cliApplicationContainer.bind<Command>(Component.HelpCommand).to(HelpCommand).inSingletonScope();
   cliApplicationContainer.bind<Command>(Component.VersionCommand).to(VersionCommand).inSingletonScope();

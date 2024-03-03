@@ -7,4 +7,6 @@ DB_NAME=six-cities
 DB_HOST=127.0.0.1
 UPLOAD_DIR=uploads
 JWT_SECRET=1234567890
+HOST=localhost
+STATIC_DIR=static
 ```

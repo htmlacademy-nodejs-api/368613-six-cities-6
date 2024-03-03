@@ -1,5 +1,4 @@
 import { Expose} from 'class-transformer';
-//import { OfferRdo } from '../../offer/index.js';
 import { Transform } from 'class-transformer';
 import { Types } from 'mongoose';
 

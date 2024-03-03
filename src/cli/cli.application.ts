@@ -2,14 +2,10 @@ import { Command } from './commands/command.interface.js';
 import { CommandParser } from './command-parser.js';
 import { Component } from '../shared/types/component.enum.js';
 import { injectable, inject } from 'inversify';
-//import { Config, RestSchema } from '../shared/libs/config/index.js';
-//import { Logger } from '../shared/libs/logger/index.js';
 
 @injectable()
 export class CLIApplication {
   constructor(
-    //@inject(Component.Logger) private readonly logger: Logger,
-    //@inject(Component.Config) private readonly config: Config<RestSchema>,
     @inject(Component.HelpCommand) private readonly helpCommand: Command,
     @inject(Component.VersionCommand) private readonly versionCommand: Command,
     @inject(Component.ImportCommand) private readonly importCommand: Command,

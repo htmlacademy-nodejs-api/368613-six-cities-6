@@ -2,19 +2,20 @@ import { inject, injectable } from 'inversify';
 import { DocumentType, types } from '@typegoose/typegoose';
 import { Logger } from '../../libs/logger/index.js';
 import { Component, SortType } from '../../types/index.js';
-import { UpdateOfferDto, OfferEntity, OfferService, CreateOfferDto, DEFAULT_OFFER_COUNT, PREMIUM_OFFER_COUNT } from './index.js';
+import { UpdateOfferDto, OfferEntity, OfferService, CreateOfferDto, DEFAULT_OFFER_COUNT, PREMIUM_OFFER_COUNT, DEFAULT_OFFER_PREVIEW, DEFAULT_IMAGES_COUNT, DEFAULT_OFFER_IMAGES } from './index.js';
 import mongoose from 'mongoose';
 import { PipelineStage } from 'mongoose';
+import { generateRandomArray } from '../../helpers/common.js';
 
 const ID_TO_STRING_PIPELINE: PipelineStage[] = [
   {
     $addFields: {
-      id: { $toString: '$_id' } // Преобразуем _id в строку и сохраняем в поле id
+      id: { $toString: '$_id' }
     }
   },
   {
     $project: {
-      _id: 0 // Удаляем поле _id
+      _id: 0
     }
   }
 ];
@@ -27,16 +28,15 @@ export class DefaultOfferService implements OfferService {
   ) {}
 
   public async createOffer(dto: CreateOfferDto): Promise<DocumentType<OfferEntity>> {
-    const savedOffer = await this.offerModel.create(dto);
+    const images = generateRandomArray(DEFAULT_OFFER_IMAGES, DEFAULT_IMAGES_COUNT);
+    console.log(images);
+    const savedOffer = await this.offerModel.create({...dto, previewImage: DEFAULT_OFFER_PREVIEW[0], photos: images});
     console.log(savedOffer);
     this.logger.info(`New offer created: ${savedOffer.title} by author`);
     return savedOffer;
   }
 
   public async editOffer(offerId: string, dto: UpdateOfferDto): Promise<DocumentType<OfferEntity>> {
-    // if ('rating' in dto || 'commentsCount' in dto || 'isFavorite' in dto || '_id' in dto || 'authorId' in dto || 'createdAt' in dto || 'updatedAt' in dto) {
-    //   throw new Error('cannot be updated directly');
-    // }
     try {
       const updatedOffer = await this.offerModel
         .findByIdAndUpdate(offerId, dto, { new: true }).populate('authorId').exec();
@@ -58,7 +58,7 @@ export class DefaultOfferService implements OfferService {
         throw new Error(`Offer with ID ${offerId} not found`);
       }
       this.logger.info(`Offer ${offerId} deleted `);
-      return result; // Add this line to return the deleted offer
+      return result;
     } catch (error) {
       this.logger.error('Error deleting offer:', error as Error);
       throw error;
@@ -75,17 +75,15 @@ export class DefaultOfferService implements OfferService {
     if (!offer) {
       throw new Error('Offer not found');
     }
-    // Calculate the new average rating and comment count
     const currentRating = offer.rating ?? 0;
     const currentCommentsCount = offer.commentsCount ?? 0;
     const totalRating = currentRating * currentCommentsCount + newRating;
     const newCommentsCount = currentCommentsCount + 1;
     const newAverageRating = totalRating / newCommentsCount;
-    // Update the offer with the new average rating and comment count
     const updatedOffer = await this.offerModel.findByIdAndUpdate(
       offerId,
       {
-        $set: { rating: newAverageRating.toFixed(1) }, //  with one decimal place
+        $set: { rating: newAverageRating.toFixed(1) },
         $inc: { commentsCount: 1 }
       },
       { new: true }
@@ -104,11 +102,11 @@ export class DefaultOfferService implements OfferService {
     console.log('из шоу', results);
     if (results.length > 0) {
       this.logger.info(`Offer with ID ${offerId} found`);
-      const offer = results[0]; // первый (и единственный) результат запроса
-      return this.offerModel.populate(offer, { path: 'authorId' }); // second argument as object with 'path' and 'model' properties
+      const offer = results[0];
+      return this.offerModel.populate(offer, { path: 'authorId' });
     } else {
       this.logger.warn(`Offer with ID ${offerId} not found`);
-      return null; // null, если оффер не найден
+      return null;
     }
   }
 
@@ -121,7 +119,7 @@ export class DefaultOfferService implements OfferService {
         { $sort: { createdAt: SortType.Down } },
         { $limit: limit },
         ...ID_TO_STRING_PIPELINE,
-        ...this.addFavoriteFlagPipeline(userId) // всегда добавляем результат addFavoriteFlagPipeline в конвейер
+        ...this.addFavoriteFlagPipeline(userId)
       ];
 
       const offers = await this.offerModel.aggregate(pipeline).exec();
@@ -180,7 +178,7 @@ export class DefaultOfferService implements OfferService {
       return [
         {
           $addFields: {
-            isFavorite: false // Устанавливаем isFavorite как false для всех предложений
+            isFavorite: false
           }
         }
       ];
@@ -196,7 +194,7 @@ export class DefaultOfferService implements OfferService {
             {
               $project: {
                 favorites: {
-                  $in: ['$$offerId', { $map: { input: '$favoriteOffers', as: 'fav', in: { $toString: '$$fav' } } }] // Преобразуем каждый элемент favoriteOffers в строку и проверяем наличие offerId
+                  $in: ['$$offerId', { $map: { input: '$favoriteOffers', as: 'fav', in: { $toString: '$$fav' } } }]
                 }
               }
             }
@@ -207,13 +205,13 @@ export class DefaultOfferService implements OfferService {
       {
         $addFields: {
           isFavorite: {
-            $arrayElemAt: ['$favoritesCheck.favorites', 0] // Используем результат проверки для установки isFavorite
+            $arrayElemAt: ['$favoritesCheck.favorites', 0]
           }
         }
       },
       {
         $project: {
-          favoritesCheck: 0 // Удаляем временный favoritesCheck
+          favoritesCheck: 0
         }
       }
     ];

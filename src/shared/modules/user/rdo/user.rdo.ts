@@ -3,6 +3,9 @@ import { UserType, EnumValues } from '../../../types/index.js';
 
 export class UserRdo {
   @Expose()
+    id: string;
+
+  @Expose()
     name: string;
 
   @Expose()
