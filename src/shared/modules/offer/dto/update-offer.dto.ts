@@ -4,16 +4,17 @@ import { Cities, OfferType, Amenities, EnumValues } from '../../../types/index.j
 import { Type } from 'class-transformer';
 import { updateValidationMessages } from './update-offer.validation-messages.js';
 import { CoordinatesDto } from './create-offer.dto.js';
+import { TITLE_MIN_LENGTH, TITLE_MAX_LENGTH, DESCRIPTION_MIN_LENGTH, DESCRIPTION_MAX_LENGTH, ROOMS_MIN, ROOMS_MAX, GUESTS_MIN, GUESTS_MAX, COST_MIN, COST_MAX } from './const-validation.js';
 
 export class UpdateOfferDto {
   @IsOptional()
   @IsString({ message: updateValidationMessages.title.isString })
-  @Length(10, 100, { message: updateValidationMessages.title.length })
+  @Length(TITLE_MIN_LENGTH, TITLE_MAX_LENGTH, { message: updateValidationMessages.title.length })
     title?: string;
 
   @IsOptional()
   @IsString({ message: updateValidationMessages.description.isString })
-  @Length(20, 1024, { message: updateValidationMessages.description.length })
+  @Length(DESCRIPTION_MIN_LENGTH, DESCRIPTION_MAX_LENGTH, { message: updateValidationMessages.description.length })
     description?: string;
 
   @IsOptional()
@@ -41,20 +42,20 @@ export class UpdateOfferDto {
 
   @IsOptional()
   @IsInt({ message: updateValidationMessages.rooms.isInt })
-  @Min(1, { message: updateValidationMessages.rooms.min })
-  @Max(8, { message: updateValidationMessages.rooms.max })
+  @Min(ROOMS_MIN, { message: updateValidationMessages.rooms.min })
+  @Max(ROOMS_MAX, { message: updateValidationMessages.rooms.max })
     rooms?: number;
 
   @IsOptional()
   @IsInt({ message: updateValidationMessages.guests.isInt })
-  @Min(1, { message: updateValidationMessages.guests.min })
-  @Max(10 , { message: updateValidationMessages.guests.max })
+  @Min(GUESTS_MIN, { message: updateValidationMessages.guests.min })
+  @Max(GUESTS_MAX , { message: updateValidationMessages.guests.max })
     guests?: number;
 
   @IsOptional()
   @IsInt({ message: updateValidationMessages.cost.isInt })
-  @Min(100, { message: updateValidationMessages.cost.min })
-  @Max(100000, { message: updateValidationMessages.cost.max })
+  @Min(COST_MIN, { message: updateValidationMessages.cost.min })
+  @Max(COST_MAX, { message: updateValidationMessages.cost.max })
     cost?: number;
 
   @IsOptional()
@@ -66,3 +67,5 @@ export class UpdateOfferDto {
   @Type(() => CoordinatesDto)
     coordinates?: CoordinatesDto;
 }
+
+export { TITLE_MIN_LENGTH, TITLE_MAX_LENGTH, DESCRIPTION_MIN_LENGTH, DESCRIPTION_MAX_LENGTH, ROOMS_MIN, ROOMS_MAX, GUESTS_MIN, GUESTS_MAX, COST_MIN, COST_MAX };
